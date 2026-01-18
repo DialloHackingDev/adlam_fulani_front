@@ -82,10 +82,21 @@ export const CartProvider = ({ children }) => {
 
   const fetchCartCount = async () => {
     try {
+      // Ne pas faire d'appel si pas de token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        dispatch({ type: 'SET_COUNT', payload: 0 });
+        return;
+      }
+      
       const response = await cartAPI.getCount();
       dispatch({ type: 'SET_COUNT', payload: response.data.count || 0 });
     } catch (error) {
-      console.error('Error fetching cart count:', error);
+      // Ignorer les erreurs 401 (non authentifié)
+      if (error.response?.status !== 401) {
+        console.error('Error fetching cart count:', error);
+      }
+      dispatch({ type: 'SET_COUNT', payload: 0 });
     }
   };
 

@@ -1,15 +1,16 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Adlam:wght@400;500;600;700&family=Noto+Serif+Adlam:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
 
-/* Configuration RTL globale */
+/* Configuration globale pour Adlam */
 * {
+  font-family: 'Noto Sans Adlam', 'Ebrima', 'Segoe UI Historic', sans-serif !important;
   direction: rtl;
 }
 
 body {
-  font-family: 'Noto Sans Adlam', 'Noto Sans', system-ui, -apple-system, sans-serif;
   direction: rtl;
   text-align: right;
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 
 /* Polices spécifiques */
@@ -19,6 +20,31 @@ body {
 
 .font-adlam-serif {
   font-family: 'Noto Serif Adlam', 'Noto Serif', Georgia, serif;
+}
+
+/* Styles pour React Quill */
+.ql-editor {
+  direction: rtl !important;
+  text-align: right !important;
+  font-family: 'Noto Sans Adlam', sans-serif !important;
+}
+
+.ql-toolbar {
+  border-top: 1px solid #ccc !important;
+  border-left: 1px solid #ccc !important;
+  border-right: 1px solid #ccc !important;
+}
+
+.ql-container {
+  border-bottom: 1px solid #ccc !important;
+  border-left: 1px solid #ccc !important;
+  border-right: 1px solid #ccc !important;
+}
+
+.ql-editor.ql-blank::before {
+  left: auto !important;
+  right: 15px !important;
+  text-align: right !important;
 }
 
 /* Utilitaires pour le texte tronqué */
@@ -97,6 +123,7 @@ body {
 /* Styles pour les inputs RTL */
 input[type="text"],
 input[type="search"],
+input[type="number"],
 textarea,
 select {
   direction: rtl;
