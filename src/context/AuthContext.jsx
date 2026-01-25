@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
-import api from '../services/api';
+import { apiService } from '../services/apiService';
 
 const AuthContext = createContext();
 
@@ -31,13 +31,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        const response = await api.get('/auth/me');
+        const response = await apiService.auth.getProfile();
         dispatch({ type: 'LOGIN_SUCCESS', payload: response.data.user });
       }
     } catch (error) {
       localStorage.removeItem('token');
-      delete api.defaults.headers.common['Authorization'];
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
@@ -48,16 +46,15 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: true });
       console.log('Attempting login with:', email);
       
-      const response = await api.post('/auth/login', { email, password });
+      const response = await apiService.auth.login({ email, password });
       console.log('Login response:', response.data);
       
       const { token, data } = response.data;
       const user = data.user;
       console.log('Token:', token, 'User:', user);
       
-      // Stocker le token ET utiliser les cookies
+      // Stocker le token
       localStorage.setItem('token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       dispatch({ type: 'LOGIN_SUCCESS', payload: user });
       
       console.log('Login successful, user role:', user.role);
@@ -71,7 +68,6 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
-    delete api.defaults.headers.common['Authorization'];
     dispatch({ type: 'LOGOUT' });
   };
 

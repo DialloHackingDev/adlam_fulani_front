@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import HeroBanner from '../components/HeroBanner';
 import ArticleCard from '../components/ArticleCard';
-import { articlesAPI } from '../services/api';
+import { apiService } from '../services/apiService';
 
 const Home = () => {
   const [articles, setArticles] = useState([]);
@@ -11,8 +11,8 @@ const Home = () => {
 
   const categories = [
     { id: 'all', name: '𞤊𞤮𞤪𞤪𞤫 𞤃𞤢𞤦𞤢𞤤𞤫' },
-    { id: 'literature', name: '𞤀𞤣𞤢𞤦𞤢𞤲' },
-    { id: 'history', name: '𞤚𞤢𞤪𞤭𞤲𞤢𞤤' },
+    { id: 'litterature', name: '𞤀𞤣𞤢𞤦𞤢𞤲' },
+    { id: 'histoire', name: '𞤚𞤢𞤪𞤭𞤲𞤢𞤤' },
     { id: 'education', name: '𞤔𞤢𞤲𞤺𞤢𞤤' },
     { id: 'culture', name: '𞤅𞤢𞤲𞤣𞤭𞤲𞤢𞤤' },
     { id: 'science', name: '𞤅𞤢𞤲𞤣𞤢𞤲𞤣𞤭' },
@@ -23,15 +23,29 @@ const Home = () => {
     const fetchArticles = async () => {
       try {
         setLoading(true);
+        console.log('Fetching articles from API...');
+        
         const [allResponse, recentResponse] = await Promise.all([
-          articlesAPI.getAll(),
-          articlesAPI.getRecent()
+          apiService.articles.getAll(),
+          apiService.articles.getRecent()
         ]);
         
-        setArticles(allResponse.data.articles || []);
-        setRecentArticles(recentResponse.data.articles || []);
+        console.log('All articles response:', allResponse.data);
+        console.log('Recent articles response:', recentResponse.data);
+        
+        const allArticles = allResponse.data.data?.articles || allResponse.data.articles || [];
+        const recentArticles = recentResponse.data.data?.articles || recentResponse.data.articles || [];
+        
+        // Debug: vérifier les images
+        console.log('Sample article with image:', allArticles.find(a => a.coverImage));
+        console.log('Articles without images:', allArticles.filter(a => !a.coverImage).length);
+        console.log('First article data:', allArticles[0]);
+        
+        setArticles(allArticles);
+        setRecentArticles(recentArticles);
       } catch (error) {
         console.error('Error fetching articles:', error);
+        console.error('Error details:', error.response?.data);
       } finally {
         setLoading(false);
       }

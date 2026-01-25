@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ArticleCard from '../components/ArticleCard';
-import { articlesAPI } from '../services/api';
+import { apiService } from '../services/apiService';
 
 const Articles = () => {
   const [articles, setArticles] = useState([]);
@@ -23,11 +23,11 @@ const Articles = () => {
         setLoading(true);
         let response;
         if (selectedCategory === 'all') {
-          response = await articlesAPI.getAll();
+          response = await apiService.articles.getAll();
         } else {
-          response = await articlesAPI.getByCategory(selectedCategory);
+          response = await apiService.articles.getByCategory(selectedCategory);
         }
-        setArticles(response.data.articles || []);
+        setArticles(response.data.data?.articles || []);
       } catch (error) {
         console.error('Error fetching articles:', error);
       } finally {

@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
-import { cartAPI } from '../services/api';
+import { apiService } from '../services/apiService';
 
 const CartContext = createContext();
 
@@ -42,7 +42,7 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (ebookId, quantity = 1) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      await cartAPI.addToCart(ebookId, quantity);
+      await apiService.cart.add({ ebookId, quantity });
       await fetchCart();
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -53,7 +53,7 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = async (ebookId) => {
     try {
-      await cartAPI.removeItem(ebookId);
+      await apiService.cart.remove(ebookId);
       dispatch({ type: 'REMOVE_ITEM', payload: ebookId });
       await fetchCartCount();
     } catch (error) {
@@ -63,7 +63,7 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
     try {
-      await cartAPI.clearCart();
+      await apiService.cart.clear();
       dispatch({ type: 'CLEAR_CART' });
     } catch (error) {
       console.error('Error clearing cart:', error);
@@ -72,7 +72,7 @@ export const CartProvider = ({ children }) => {
 
   const fetchCart = async () => {
     try {
-      const response = await cartAPI.getCart();
+      const response = await apiService.cart.get();
       dispatch({ type: 'SET_CART', payload: response.data.items || [] });
     } catch (error) {
       console.error('Error fetching cart:', error);
@@ -82,20 +82,15 @@ export const CartProvider = ({ children }) => {
 
   const fetchCartCount = async () => {
     try {
-      // Ne pas faire d'appel si pas de token
       const token = localStorage.getItem('token');
       if (!token) {
         dispatch({ type: 'SET_COUNT', payload: 0 });
         return;
       }
-      
-      const response = await cartAPI.getCount();
+      const response = await apiService.cart.getCount();
       dispatch({ type: 'SET_COUNT', payload: response.data.count || 0 });
     } catch (error) {
-      // Ignorer les erreurs 401 (non authentifié)
-      if (error.response?.status !== 401) {
-        console.error('Error fetching cart count:', error);
-      }
+      console.error('Error fetching cart count:', error);
       dispatch({ type: 'SET_COUNT', payload: 0 });
     }
   };

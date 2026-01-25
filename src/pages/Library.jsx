@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { HiSearch, HiFilter } from 'react-icons/hi';
 import EbookCard from '../components/EbookCard';
-import { ebooksAPI } from '../services/api';
+import { apiService } from '../services/apiService';
 
 const Library = () => {
   const [ebooks, setEbooks] = useState([]);
@@ -34,9 +34,9 @@ const Library = () => {
     const fetchEbooks = async () => {
       try {
         setLoading(true);
-        const response = await ebooksAPI.getAll();
-        setEbooks(response.data.ebooks || []);
-        setFilteredEbooks(response.data.ebooks || []);
+        const response = await apiService.ebooks.getAll();
+        setEbooks(response.data.data?.ebooks || []);
+        setFilteredEbooks(response.data.data?.ebooks || []);
       } catch (error) {
         console.error('Error fetching ebooks:', error);
       } finally {

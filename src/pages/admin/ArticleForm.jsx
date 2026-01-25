@@ -5,8 +5,7 @@ import RichTextEditor from '../../components/admin/RichTextEditor';
 import ImageUpload from '../../components/admin/ImageUpload';
 import FulaniInput from '../../components/FulaniInput';
 import FulaniTextarea from '../../components/FulaniTextarea';
-import { adminArticlesAPI } from '../../services/adminAPI';
-import { articlesAPI } from '../../services/api';
+import { apiService } from '../../services/apiService';
 
 const ArticleForm = () => {
   const navigate = useNavigate();
@@ -27,11 +26,11 @@ const ArticleForm = () => {
   const [previewMode, setPreviewMode] = useState(false);
 
   const categories = [
-    { id: 'literature', name: '𞤀𞤣𞤢𞤦𞤢𞤲' },
-    { id: 'history', name: '𞤚𞤢𞤪𞤭𞤲𞤢𞤤' },
-    { id: 'education', name: '𞤔𞤢𞤲𞤺𞤮𞤤' },
-    { id: 'culture', name: '𞤅𞤢𞤪𞤣𞤭𞤲𞤢𞤤' },
-    { id: 'science', name: '𞤅𞤢𞤪𞤣𞤢𞤪𞤣𞤭' },
+    { id: 'litterature', name: '𞤀𞤣𞤢𞤦𞤢𞤲' },
+    { id: 'histoire', name: '𞤚𞤢𞤪𞤭𞤲𞤢𞤤' },
+    { id: 'education', name: '𞤔𞤢𞤲𞤺𞤢𞤤' },
+    { id: 'culture', name: '𞤅𞤢𞤲𞤣𞤭𞤲𞤢𞤤' },
+    { id: 'science', name: '𞤅𞤢𞤲𞤣𞤢𞤲𞤣𞤭' },
     { id: 'religion', name: '𞤄𞤭𞤲𞤢𞤤' },
   ];
 
@@ -44,19 +43,20 @@ const ArticleForm = () => {
   const fetchArticle = async () => {
     try {
       setLoading(true);
-      const response = await articlesAPI.getBySlug(id);
-      const article = response.data.article;
+      const response = await apiService.articles.getBySlug(id);
+      const article = response.data.data?.article || response.data.article;
       setFormData({
-        title: article.title,
-        excerpt: article.excerpt,
-        content: article.content,
-        category: article.category,
+        title: article.title || '',
+        excerpt: article.excerpt || '',
+        content: article.content || '',
+        category: article.category || '',
         tags: article.tags?.join(', ') || '',
-        featured: article.featured,
-        published: article.published
+        featured: article.featured || false,
+        published: article.status === 'published'
       });
     } catch (error) {
       console.error('Error fetching article:', error);
+      alert('Erreur lors du chargement de l\'article');
     } finally {
       setLoading(false);
     }
@@ -68,29 +68,46 @@ const ArticleForm = () => {
 
     try {
       const submitData = new FormData();
+      
+      // Ajouter tous les champs du formulaire
       Object.keys(formData).forEach(key => {
         if (key === 'tags') {
-          // Envoyer les tags comme une chaîne séparée par des virgules
-          submitData.append(key, formData[key]);
+          // Convertir la chaîne de tags en array
+          const tagsArray = formData[key]
+            .split(',')
+            .map(tag => tag.trim())
+            .filter(tag => tag.length > 0);
+          submitData.append('tags', tagsArray.join(','));
         } else {
           submitData.append(key, formData[key]);
         }
       });
 
+      // Ajouter l'image si présente
       if (coverImage) {
         submitData.append('coverImage', coverImage);
       }
 
-      if (isEdit) {
-        await adminArticlesAPI.update(id, submitData);
-      } else {
-        await adminArticlesAPI.create(submitData);
+      // Debug: afficher les données envoyées
+      console.log('Données envoyées:');
+      for (let [key, value] of submitData.entries()) {
+        console.log(key, value);
       }
 
+      let response;
+      if (isEdit) {
+        response = await apiService.articles.update(id, submitData);
+      } else {
+        response = await apiService.articles.create(submitData);
+      }
+
+      console.log('Réponse du serveur:', response.data);
+      alert(isEdit ? 'Article mis à jour avec succès!' : 'Article créé avec succès!');
       navigate('/admin/articles');
     } catch (error) {
       console.error('Error saving article:', error);
       console.error('Error response:', error.response?.data);
+      alert(`Erreur: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -189,7 +206,7 @@ const ArticleForm = () => {
                 𞤃𞤢𞤦𞤢𞤤 𞤊𞤮𞤤𞤤𞤢𞤤 *
               </label>
               {previewMode ? (
-                <div 
+                <div
                   className="min-h-96 p-4 border border-gray-300 rounded-lg bg-white prose max-w-none"
                   dangerouslySetInnerHTML={{ __html: formData.content }}
                   dir="rtl"

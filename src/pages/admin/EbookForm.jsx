@@ -5,8 +5,7 @@ import ImageUpload from '../../components/admin/ImageUpload';
 import PDFUpload from '../../components/admin/PDFUpload';
 import FulaniInput from '../../components/FulaniInput';
 import FulaniTextarea from '../../components/FulaniTextarea';
-import { adminEbooksAPI } from '../../services/adminAPI';
-import { ebooksAPI } from '../../services/api';
+import { apiService } from '../../services/apiService';
 
 const EbookForm = () => {
   const navigate = useNavigate();
@@ -19,7 +18,7 @@ const EbookForm = () => {
     description: '',
     category: '',
     price: '',
-    pages: '',
+    pageCount: '',
     language: 'fulani',
     featured: false,
     published: true
@@ -29,11 +28,11 @@ const EbookForm = () => {
   const [loading, setLoading] = useState(false);
 
   const categories = [
-    { id: 'literature', name: '𞤀𞤣𞤢𞤦𞤢𞤲' },
-    { id: 'history', name: '𞤚𞤢𞤪𞤭𞤲𞤢𞤤' },
-    { id: 'education', name: '𞤔𞤢𞤲𞤺𞤮𞤤' },
-    { id: 'culture', name: '𞤅𞤢𞤪𞤣𞤭𞤲𞤢𞤤' },
-    { id: 'science', name: '𞤅𞤢𞤪𞤣𞤢𞤪𞤣𞤭' },
+    { id: 'litterature', name: '𞤀𞤣𞤢𞤦𞤢𞤲' },
+    { id: 'histoire', name: '𞤚𞤢𞤪𞤭𞤲𞤢𞤤' },
+    { id: 'education', name: '𞤔𞤢𞤲𞤺𞤢𞤤' },
+    { id: 'culture', name: '𞤅𞤢𞤲𞤣𞤭𞤲𞤢𞤤' },
+    { id: 'science', name: '𞤅𞤢𞤲𞤣𞤢𞤲𞤣𞤭' },
     { id: 'religion', name: '𞤄𞤭𞤲𞤢𞤤' },
   ];
 
@@ -46,21 +45,22 @@ const EbookForm = () => {
   const fetchEbook = async () => {
     try {
       setLoading(true);
-      const response = await ebooksAPI.getBySlug(id);
-      const ebook = response.data.ebook;
+      const response = await apiService.ebooks.getBySlug(id);
+      const ebook = response.data.data?.ebook || response.data.ebook;
       setFormData({
-        title: ebook.title,
-        author: ebook.author,
-        description: ebook.description,
-        category: ebook.category,
-        price: ebook.price,
-        pages: ebook.pages,
+        title: ebook.title || '',
+        author: ebook.author || '',
+        description: ebook.description || '',
+        category: ebook.category || '',
+        price: ebook.price || '',
+        pageCount: ebook.pageCount || ebook.pages || '',
         language: ebook.language || 'fulani',
-        featured: ebook.featured,
-        published: ebook.published
+        featured: ebook.featured || false,
+        published: ebook.status === 'published'
       });
     } catch (error) {
       console.error('Error fetching ebook:', error);
+      alert('Erreur lors du chargement de l\'e-book');
     } finally {
       setLoading(false);
     }
@@ -72,10 +72,13 @@ const EbookForm = () => {
 
     try {
       const submitData = new FormData();
+      
+      // Ajouter tous les champs du formulaire
       Object.keys(formData).forEach(key => {
         submitData.append(key, formData[key]);
       });
 
+      // Ajouter les fichiers
       if (coverImage) {
         submitData.append('coverImage', coverImage);
       }
@@ -84,15 +87,26 @@ const EbookForm = () => {
         submitData.append('pdfFile', pdfFile);
       }
 
-      if (isEdit) {
-        await adminEbooksAPI.update(id, submitData);
-      } else {
-        await adminEbooksAPI.create(submitData);
+      // Debug: afficher les données envoyées
+      console.log('Données envoyées:');
+      for (let [key, value] of submitData.entries()) {
+        console.log(key, value);
       }
 
+      let response;
+      if (isEdit) {
+        response = await apiService.ebooks.update(id, submitData);
+      } else {
+        response = await apiService.ebooks.create(submitData);
+      }
+
+      console.log('Réponse du serveur:', response.data);
+      alert(isEdit ? 'E-book mis à jour avec succès!' : 'E-book créé avec succès!');
       navigate('/admin/ebooks');
     } catch (error) {
       console.error('Error saving ebook:', error);
+      console.error('Error response:', error.response?.data);
+      alert(`Erreur: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -216,8 +230,8 @@ const EbookForm = () => {
                 </label>
                 <input
                   type="number"
-                  name="pages"
-                  value={formData.pages}
+                  name="pageCount"
+                  value={formData.pageCount}
                   onChange={handleInputChange}
                   min="1"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-right"

@@ -19,13 +19,20 @@ const EbookCard = ({ ebook }) => {
     }).format(price);
   };
 
+  // Construire l'URL complète pour l'image
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return '/placeholder-book.jpg';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `http://localhost:5000${imagePath}`;
+  };
+
   return (
     <div className="bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group">
       <Link to={`/library/${ebook.slug}`} className="block">
         {/* Cover Image */}
         <div className="aspect-[3/4] overflow-hidden bg-gray-100">
           <img
-            src={ebook.coverImage || '/placeholder-book.jpg'}
+            src={getImageUrl(ebook.coverImage)}
             alt={ebook.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
