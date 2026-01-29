@@ -15,15 +15,18 @@ const FulaniTextarea = ({ onKeyPress, onChange, value, ...props }) => {
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
       const currentValue = textarea.value;
-      const newValue = currentValue.substring(0, start) + frenchToAdlam[char] + currentValue.substring(end);
+      const adlamChar = frenchToAdlam[char];
+      const newValue = currentValue.substring(0, start) + adlamChar + currentValue.substring(end);
       
       const event = { target: { name: textarea.name, value: newValue } };
       if (onChange) {
         onChange(event);
       }
       
+      // Calculer la nouvelle position du curseur basée sur la longueur du caractère Adlam
       setTimeout(() => {
-        textarea.setSelectionRange(start + 1, start + 1);
+        const newPosition = start + adlamChar.length;
+        textarea.setSelectionRange(newPosition, newPosition);
       }, 0);
     }
     

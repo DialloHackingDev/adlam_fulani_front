@@ -15,15 +15,18 @@ const FulaniInput = ({ onKeyPress, onChange, value, ...props }) => {
       const start = input.selectionStart;
       const end = input.selectionEnd;
       const currentValue = input.value;
-      const newValue = currentValue.substring(0, start) + frenchToAdlam[char] + currentValue.substring(end);
+      const adlamChar = frenchToAdlam[char];
+      const newValue = currentValue.substring(0, start) + adlamChar + currentValue.substring(end);
       
       const event = { target: { name: input.name, value: newValue } };
       if (onChange) {
         onChange(event);
       }
       
+      // Calculer la nouvelle position du curseur basée sur la longueur du caractère Adlam
       setTimeout(() => {
-        input.setSelectionRange(start + 1, start + 1);
+        const newPosition = start + adlamChar.length;
+        input.setSelectionRange(newPosition, newPosition);
       }, 0);
     }
     

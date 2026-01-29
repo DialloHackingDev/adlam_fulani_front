@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 // Mapping des caractères français vers Fulani/Adlam
 const frenchToAdlam = {
@@ -8,6 +8,14 @@ const frenchToAdlam = {
 
 const RichTextEditor = ({ value, onChange, placeholder }) => {
   const editorRef = useRef(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Synchroniser le contenu initial sans déclencher onChange
+  useEffect(() => {
+    if (editorRef.current && !isUpdating && editorRef.current.innerHTML !== value) {
+      editorRef.current.innerHTML = value || '';
+    }
+  }, [value, isUpdating]);
 
   const executeCommand = (command, value = null) => {
     editorRef.current.focus();
@@ -20,9 +28,28 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
   const handleFontSize = (size) => executeCommand('fontSize', size);
   const handleFontFamily = (font) => executeCommand('fontName', font);
 
+  const insertTextAtCursor = (text) => {
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      
+      const textNode = document.createTextNode(text);
+      range.insertNode(textNode);
+      
+      // Positionner le curseur après le texte inséré
+      range.setStartAfter(textNode);
+      range.setEndAfter(textNode);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  };
+
   const handleContentChange = () => {
-    if (editorRef.current) {
+    if (editorRef.current && !isUpdating) {
+      setIsUpdating(true);
       onChange(editorRef.current.innerHTML);
+      setTimeout(() => setIsUpdating(false), 0);
     }
   };
 
@@ -30,7 +57,8 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
     const char = e.key;
     if (frenchToAdlam[char]) {
       e.preventDefault();
-      document.execCommand('insertText', false, frenchToAdlam[char]);
+      insertTextAtCursor(frenchToAdlam[char]);
+      handleContentChange();
     }
   };
 
@@ -105,11 +133,12 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
           direction: 'rtl',
           textAlign: 'right',
           fontFamily: 'Noto Sans Adlam, sans-serif',
-          lineHeight: '1.6'
+          lineHeight: '1.6',
+          unicodeBidi: 'plaintext'
         }}
         onInput={handleContentChange}
         onKeyPress={handleKeyPress}
-        dangerouslySetInnerHTML={{ __html: value || '' }}
+        suppressContentEditableWarning={true}
         data-placeholder={placeholder}
       />
       
