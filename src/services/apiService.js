@@ -182,6 +182,15 @@ export const apiService = {
     getInfo: () => apiClient.get('/shop'),
     update: (shopData) => apiClient.put('/shop', shopData),
   },
+
+  // ==================== CONTACT ====================
+  contact: {
+    send: (contactData) => apiClient.post('/contact', contactData),
+    getMessages: () => apiClient.get('/admin/contact/messages'),
+    getMessage: (id) => apiClient.get(`/admin/contact/messages/${id}`),
+    markAsRead: (id) => apiClient.patch(`/admin/contact/messages/${id}/read`),
+    delete: (id) => apiClient.delete(`/admin/contact/messages/${id}`),
+  },
 };
 
 export default apiService;
