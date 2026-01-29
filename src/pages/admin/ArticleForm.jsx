@@ -43,7 +43,7 @@ const ArticleForm = () => {
   const fetchArticle = async () => {
     try {
       setLoading(true);
-      const response = await apiService.articles.getBySlug(id);
+      const response = await apiService.articles.getById(id);
       const article = response.data.data?.article || response.data.article;
       setFormData({
         title: article.title || '',

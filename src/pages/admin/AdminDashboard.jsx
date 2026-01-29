@@ -96,7 +96,7 @@ const AdminDashboard = () => {
   const handleDeleteArticle = async (id) => {
     if (window.confirm('𞤀 𞤴𞤮𞤲𞤢𞤲 𞤃𞤢𞤦𞤢𞤤 𞤲𞤣𞤫 𞤸𞤢𞤤𞤢𞤲?')) {
       try {
-        await adminArticlesAPI.delete(id);
+        await apiService.articles.delete(id);
         setArticles(articles.filter(article => article._id !== id));
         setStats(prev => ({ ...prev, totalArticles: prev.totalArticles - 1 }));
       } catch (error) {
@@ -108,7 +108,7 @@ const AdminDashboard = () => {
   const handleDeleteEbook = async (id) => {
     if (window.confirm('𞤀 𞤴𞤮𞤲𞤢𞤲 𞤃𞤫𞤧𞤮 𞤲𞤣𞤫 𞤸𞤢𞤤𞤢𞤲?')) {
       try {
-        await adminEbooksAPI.delete(id);
+        await apiService.ebooks.delete(id);
         setEbooks(ebooks.filter(ebook => ebook._id !== id));
         setStats(prev => ({ ...prev, totalEbooks: prev.totalEbooks - 1 }));
       } catch (error) {
@@ -318,25 +318,28 @@ const AdminDashboard = () => {
                             {article.likes || 0}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
-                            <div className="flex space-x-2 space-x-reverse">
+                            <div className="flex space-x-2 space-x-reverse sm:space-x-2 sm:space-x-reverse">
                               <Link
                                 to={`/articles/${article.slug}`}
-                                className="text-gray-600 hover:text-gray-900"
+                                className="text-gray-600 hover:text-gray-900 p-1 sm:p-0"
                                 target="_blank"
+                                title="𞤴𞤮𞤲𞤢𞤲"
                               >
-                                <HiEye className="h-5 w-5" />
+                                <HiEye className="h-5 w-5 sm:h-4 sm:w-4" />
                               </Link>
                               <Link
                                 to={`/admin/articles/edit/${article._id}`}
-                                className="text-gray-600 hover:text-gray-900"
+                                className="text-gray-600 hover:text-gray-900 p-1 sm:p-0"
+                                title="𞤻𞤫𞤪𞤲𞤣𞤫"
                               >
-                                <HiPencil className="h-5 w-5" />
+                                <HiPencil className="h-5 w-5 sm:h-4 sm:w-4" />
                               </Link>
                               <button
                                 onClick={() => handleDeleteArticle(article._id)}
-                                className="text-red-600 hover:text-red-900"
+                                className="text-red-600 hover:text-red-900 p-1 sm:p-0"
+                                title="𞤸𞤢𞤤𞤢𞤲"
                               >
-                                <HiTrash className="h-5 w-5" />
+                                <HiTrash className="h-5 w-5 sm:h-4 sm:w-4" />
                               </button>
                             </div>
                           </td>
@@ -402,25 +405,28 @@ const AdminDashboard = () => {
                             {formatDate(ebook.createdAt)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
-                            <div className="flex space-x-2 space-x-reverse">
+                            <div className="flex space-x-2 space-x-reverse sm:space-x-2 sm:space-x-reverse">
                               <Link
                                 to={`/ebooks/${ebook.slug}`}
-                                className="text-gray-600 hover:text-gray-900"
+                                className="text-gray-600 hover:text-gray-900 p-1 sm:p-0"
                                 target="_blank"
+                                title="𞤴𞤮𞤲𞤢𞤲"
                               >
-                                <HiEye className="h-5 w-5" />
+                                <HiEye className="h-5 w-5 sm:h-4 sm:w-4" />
                               </Link>
                               <Link
                                 to={`/admin/ebooks/edit/${ebook._id}`}
-                                className="text-gray-600 hover:text-gray-900"
+                                className="text-gray-600 hover:text-gray-900 p-1 sm:p-0"
+                                title="𞤻𞤫𞤪𞤲𞤣𞤫"
                               >
-                                <HiPencil className="h-5 w-5" />
+                                <HiPencil className="h-5 w-5 sm:h-4 sm:w-4" />
                               </Link>
                               <button
                                 onClick={() => handleDeleteEbook(ebook._id)}
-                                className="text-red-600 hover:text-red-900"
+                                className="text-red-600 hover:text-red-900 p-1 sm:p-0"
+                                title="𞤸𞤢𞤤𞤢𞤲"
                               >
-                                <HiTrash className="h-5 w-5" />
+                                <HiTrash className="h-5 w-5 sm:h-4 sm:w-4" />
                               </button>
                             </div>
                           </td>

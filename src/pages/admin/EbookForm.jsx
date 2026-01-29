@@ -45,7 +45,7 @@ const EbookForm = () => {
   const fetchEbook = async () => {
     try {
       setLoading(true);
-      const response = await apiService.ebooks.getBySlug(id);
+      const response = await apiService.ebooks.getById(id);
       const ebook = response.data.data?.ebook || response.data.ebook;
       setFormData({
         title: ebook.title || '',

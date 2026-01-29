@@ -55,6 +55,7 @@ export const apiService = {
     getFeatured: (limit = 3) => apiClient.get(`/articles/featured?limit=${limit}`),
     getPopular: (limit = 6) => apiClient.get(`/articles/popular?limit=${limit}`),
     getBySlug: (slug) => apiClient.get(`/articles/slug/${slug}`),
+    getById: (id) => apiClient.get(`/articles/${id}`),
     getByCategory: (category, params = {}) => apiClient.get(`/articles/category/${category}`, { params }),
     search: (query, params = {}) => apiClient.get(`/articles/search?q=${query}`, { params }),
     
@@ -82,6 +83,7 @@ export const apiService = {
     getFeatured: (limit = 3) => apiClient.get(`/ebooks/featured?limit=${limit}`),
     getBestsellers: (limit = 6) => apiClient.get(`/ebooks/bestsellers?limit=${limit}`),
     getBySlug: (slug) => apiClient.get(`/ebooks/slug/${slug}`),
+    getById: (id) => apiClient.get(`/ebooks/${id}`),
     getByCategory: (category, params = {}) => apiClient.get(`/ebooks/category/${category}`, { params }),
     
     // User actions
