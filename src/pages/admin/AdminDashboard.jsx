@@ -144,76 +144,77 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8" dir="rtl">
-          <h1 className="text-3xl font-bold text-black mb-2">
+        <div className="mb-6 sm:mb-8" dir="rtl">
+          <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2">
             𞤃𞤢𞤪𞤸𞤢𞤤 𞤀𞤣𞤥𞤭𞤲
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             𞤃𞤢𞤪𞤸𞤢𞤤 𞤃𞤢𞤦𞤢𞤤𞤫 𞤫 𞤃𞤫𞤧𞤫
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 border border-gray-200 rounded-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white p-4 sm:p-6 border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">𞤃𞤢𞤦𞤢𞤤𞤫</p>
-                <p className="text-3xl font-bold text-black">{stats.totalArticles}</p>
+                <p className="text-xs sm:text-sm text-gray-600">𞤃𞤢𞤦𞤢𞤤𞤫</p>
+                <p className="text-2xl sm:text-3xl font-bold text-black">{stats.totalArticles}</p>
               </div>
-              <HiNewspaper className="h-12 w-12 text-gray-400" />
+              <HiNewspaper className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
             </div>
           </div>
           
-          <div className="bg-white p-6 border border-gray-200 rounded-lg">
+          <div className="bg-white p-4 sm:p-6 border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">𞤃𞤫𞤧𞤫</p>
-                <p className="text-3xl font-bold text-black">{stats.totalEbooks}</p>
+                <p className="text-xs sm:text-sm text-gray-600">𞤃𞤫𞤧𞤫</p>
+                <p className="text-2xl sm:text-3xl font-bold text-black">{stats.totalEbooks}</p>
               </div>
-              <HiBookOpen className="h-12 w-12 text-gray-400" />
+              <HiBookOpen className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
             </div>
           </div>
           
-          <div className="bg-white p-6 border border-gray-200 rounded-lg">
+          <div className="bg-white p-4 sm:p-6 border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">𞤖𞤢𞤤𞤤𞤮𞤦𞤫</p>
-                <p className="text-3xl font-bold text-black">{stats.totalUsers}</p>
+                <p className="text-xs sm:text-sm text-gray-600">𞤖𞤢𞤤𞤤𞤮𞤦𞤫</p>
+                <p className="text-2xl sm:text-3xl font-bold text-black">{stats.totalUsers}</p>
               </div>
-              <HiUsers className="h-12 w-12 text-gray-400" />
+              <HiUsers className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
             </div>
           </div>
           
-          <div className="bg-white p-6 border border-gray-200 rounded-lg">
+          <div className="bg-white p-4 sm:p-6 border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">𞤅𞤢𞤪𞤭</p>
-                <p className="text-3xl font-bold text-black">{formatPrice(stats.totalRevenue)}</p>
+                <p className="text-xs sm:text-sm text-gray-600">𞤅𞤢𞤪𞤭</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-black">{formatPrice(stats.totalRevenue)}</p>
               </div>
-              <HiCurrencyDollar className="h-12 w-12 text-gray-400" />
+              <HiCurrencyDollar className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
             </div>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="bg-white border border-gray-200 rounded-lg">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 space-x-reverse px-6" dir="rtl">
+          <div className="border-b border-gray-200 overflow-x-auto">
+            <nav className="flex space-x-4 sm:space-x-8 space-x-reverse px-4 sm:px-6" dir="rtl">
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
                   activeTab === 'overview'
                     ? 'border-black text-black'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <HiChartBar className="inline ml-2 h-4 w-4" />
-                𞤚𞤵𞤤𞤭𞥄𞤲 𞤏𞤢𞥄𞤲𞤭𞥄𞤲
+                <span className="hidden sm:inline">𞤚𞤵𞤤𞤭𞥄𞤲 𞤏𞤢𞥄𞤲𞤭𞥄𞤲</span>
+                <span className="sm:hidden">𞤚𞤵𞤤𞤭𞥄𞤲</span>
               </button>
               <button
                 onClick={() => setActiveTab('articles')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
                   activeTab === 'articles'
                     ? 'border-black text-black'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -223,7 +224,7 @@ const AdminDashboard = () => {
               </button>
               <button
                 onClick={() => setActiveTab('ebooks')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
                   activeTab === 'ebooks'
                     ? 'border-black text-black'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -235,16 +236,17 @@ const AdminDashboard = () => {
           </div>
 
           {/* Tab Content */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {activeTab === 'overview' && (
               <div>
-                <div className="mb-6 flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-black flex items-center">
-                    <HiTrendingUp className="ml-3 h-6 w-6" />
-                    𞤈𞤭𞤲𞤢𞥄𞤲𞤭𞥄𞤲 𞤫 𞤀𞤲𞤢𞥄𞤤𞤭𞤼𞤭𞥄𞤲
+                <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <h2 className="text-lg sm:text-xl font-bold text-black flex items-center">
+                    <HiTrendingUp className="ml-2 sm:ml-3 h-5 w-5 sm:h-6 sm:w-6" />
+                    <span className="hidden sm:inline">𞤈𞤭𞤲𞤢𞥄𞤲𞤭𞥄𞤲 𞤫 𞤀𞤲𞤢𞥄𞤤𞤭𞤼𞤭𞥄𞤲</span>
+                    <span className="sm:hidden">𞤈𞤭𞤲𞤢𞥄𞤲𞤭𞥄𞤲</span>
                   </h2>
-                  <div className="text-sm text-gray-500">
-                    𞤁𞤢𞤪𞤭𞥄𞤲 30 𞤴𞤮𞤪𞤭𞥄𞤲 𞤥𞤢𞥄𞤲𞤭𞥄𞤲
+                  <div className="text-xs sm:text-sm text-gray-500">
+                    𞤁𞤢𞤪𞤭𞥄𞤲 30 𞤴𞤮𞤪𞤭𞥄𞤲
                   </div>
                 </div>
                 <DashboardCharts 
@@ -259,13 +261,13 @@ const AdminDashboard = () => {
             {activeTab === 'articles' && (
               <div>
                 {/* Add Button */}
-                <div className="flex justify-between items-center mb-6" dir="rtl">
-                  <h2 className="text-xl font-bold text-black">𞤃𞤢𞤦𞤢𞤤𞤫</h2>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-3" dir="rtl">
+                  <h2 className="text-lg sm:text-xl font-bold text-black">𞤃𞤢𞤦𞤢𞤤𞤫</h2>
                   <Link
                     to="/admin/articles/new"
-                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center"
+                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center text-sm sm:text-base"
                   >
-                    <HiPlus className="h-5 w-5 ml-2" />
+                    <HiPlus className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
                     𞤃𞤢𞤦𞤢𞤤 𞤑𞤫𞤧𞤮
                   </Link>
                 </div>
@@ -354,13 +356,13 @@ const AdminDashboard = () => {
             {activeTab === 'ebooks' && (
               <div>
                 {/* Add Button */}
-                <div className="flex justify-between items-center mb-6" dir="rtl">
-                  <h2 className="text-xl font-bold text-black">𞤃𞤫𞤧𞤫</h2>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-3" dir="rtl">
+                  <h2 className="text-lg sm:text-xl font-bold text-black">𞤃𞤫𞤧𞤫</h2>
                   <Link
                     to="/admin/ebooks/new"
-                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center"
+                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center text-sm sm:text-base"
                   >
-                    <HiPlus className="h-5 w-5 ml-2" />
+                    <HiPlus className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
                     𞤃𞤫𞤧𞤮 𞤑𞤫𞤧𞤮
                   </Link>
                 </div>

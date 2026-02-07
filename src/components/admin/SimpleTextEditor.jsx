@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { HiOutlineEye, HiArrowsExpand, HiOutlineDocumentText, HiOutlineCode } from 'react-icons/hi';
 
-const SimpleTextEditor = ({ value, onChange, placeholder = 'Commencez à écrire...', showPreview = false, onPreviewChange }) => {
+const SimpleTextEditor = ({ value, onChange, placeholder = '𞤆𞤵𞤤𞤢𞤲𞤣𞤫 𞤸𞤢𞤲𞤣𞤢𞤤...', showPreview = false, onPreviewChange }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const textareaRef = useRef(null);
@@ -47,7 +47,7 @@ const SimpleTextEditor = ({ value, onChange, placeholder = 'Commencez à écrire
   const insertHeading = () => insertFormatting('## ');
   const insertList = () => insertFormatting('- ');
   const insertLink = () => {
-    const url = prompt('Entrez l\'URL:');
+    const url = prompt('𞤖𞤢𞤤𞤢𞤲𞤣𞤫 URL:');
     if (url) {
       insertFormatting('[', `](${url})`);
     }
@@ -61,35 +61,35 @@ const SimpleTextEditor = ({ value, onChange, placeholder = 'Commencez à écrire
           <button
             onClick={insertBold}
             className="p-2 rounded hover:bg-gray-200 font-bold"
-            title="Gras"
+            title="𞤅𞤫𞤥𞤦𞤫"
           >
             B
           </button>
           <button
             onClick={insertItalic}
             className="p-2 rounded hover:bg-gray-200 italic"
-            title="Italique"
+            title="𞤋𞤼𞤢𞤤𞤭𞤳"
           >
             I
           </button>
           <button
             onClick={insertHeading}
             className="p-2 rounded hover:bg-gray-200"
-            title="Titre"
+            title="𞤚𞤢𞤦𞤭"
           >
             H
           </button>
           <button
             onClick={insertList}
             className="p-2 rounded hover:bg-gray-200"
-            title="Liste"
+            title="𞤂𞤭𞤧𞤼"
           >
             •
           </button>
           <button
             onClick={insertLink}
             className="p-2 rounded hover:bg-gray-200"
-            title="Lien"
+            title="𞤂𞤭𞤲𞤳"
           >
             🔗
           </button>
@@ -100,7 +100,7 @@ const SimpleTextEditor = ({ value, onChange, placeholder = 'Commencez à écrire
             <button
               onClick={togglePreview}
               className="p-2 rounded hover:bg-gray-200 transition-colors"
-              title={isPreviewMode ? 'Mode édition' : 'Aperçu'}
+              title={isPreviewMode ? '𞤃𞤮𞤣 𞤆𞤢𞤴𞤭' : '𞤐𞤢𞤴𞤢𞤤'}
             >
               <HiOutlineEye className="h-4 w-4" />
             </button>
@@ -108,7 +108,7 @@ const SimpleTextEditor = ({ value, onChange, placeholder = 'Commencez à écrire
           <button
             onClick={toggleFullscreen}
             className="p-2 rounded hover:bg-gray-100 transition-colors"
-            title={isFullscreen ? 'Quitter le plein écran' : 'Plein écran'}
+            title={isFullscreen ? '𞤊𞤵𞤳𞤢 𞤬𞤵𞤤𞤢𞤲 𞤫𞤳𞤪𞤢𞤲' : '𞤊𞤵𞤤𞤢𞤲 𞤫𞤳𞤪𞤢𞤲'}
           >
             <HiArrowsExpand className="h-4 w-4" />
           </button>
@@ -152,7 +152,7 @@ const SimpleTextEditor = ({ value, onChange, placeholder = 'Commencez à écrire
         {showPreview && isPreviewMode && (
           <div className="w-1/2 border-l">
             <div className="p-4 h-96 overflow-y-auto bg-gray-50">
-              <div className="text-sm text-gray-600 mb-2">Aperçu:</div>
+              <div className="text-sm text-gray-600 mb-2">𞤐𞤢𞤴𞤢𞤤:</div>
               <div 
                 className="prose max-w-none"
                 dangerouslySetInnerHTML={{ 

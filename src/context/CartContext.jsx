@@ -55,7 +55,7 @@ export const CartProvider = ({ children }) => {
     try {
       await apiService.cart.remove(ebookId);
       dispatch({ type: 'REMOVE_ITEM', payload: ebookId });
-      await fetchCartCount();
+      await fetchCart(); // Recharger le panier complet
     } catch (error) {
       console.error('Error removing from cart:', error);
     }
@@ -72,10 +72,17 @@ export const CartProvider = ({ children }) => {
 
   const fetchCart = async () => {
     try {
+      dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.cart.get();
-      dispatch({ type: 'SET_CART', payload: response.data.items || [] });
+      const cartData = response.data.data || response.data;
+      dispatch({ type: 'SET_CART', payload: cartData.items || [] });
+      dispatch({ type: 'SET_COUNT', payload: cartData.totalItems || 0 });
     } catch (error) {
       console.error('Error fetching cart:', error);
+      // En cas d'erreur, initialiser avec un panier vide
+      dispatch({ type: 'SET_CART', payload: [] });
+      dispatch({ type: 'SET_COUNT', payload: 0 });
+    } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
@@ -88,7 +95,8 @@ export const CartProvider = ({ children }) => {
         return;
       }
       const response = await apiService.cart.getCount();
-      dispatch({ type: 'SET_COUNT', payload: response.data.count || 0 });
+      const count = response.data.data?.count || response.data.count || 0;
+      dispatch({ type: 'SET_COUNT', payload: count });
     } catch (error) {
       console.error('Error fetching cart count:', error);
       dispatch({ type: 'SET_COUNT', payload: 0 });

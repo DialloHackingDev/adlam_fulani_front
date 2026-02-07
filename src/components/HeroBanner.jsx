@@ -24,19 +24,15 @@ const HeroBanner = () => {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        // Essayer d'abord les articles featured
-        const featuredResponse = await apiService.articles.getFeatured();
-        let articlesData = featuredResponse.data.data?.articles || featuredResponse.data.articles || [];
-        
-        // Si aucun article featured, utiliser les articles récents
-        if (articlesData.length === 0) {
-          const recentResponse = await apiService.articles.getRecent();
-          articlesData = recentResponse.data.data?.articles || recentResponse.data.articles || [];
-        }
+        // Utiliser directement getAll au lieu de getFeatured/getRecent
+        const response = await apiService.articles.getAll({ limit: 5, status: 'published' });
+        const articlesData = response.data.data?.articles || response.data.articles || [];
         
         setArticles(articlesData);
       } catch (error) {
         console.error('Error fetching articles:', error);
+        // Fallback avec des données vides
+        setArticles([]);
       } finally {
         setLoading(false);
       }

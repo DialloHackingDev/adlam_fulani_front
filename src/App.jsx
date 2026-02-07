@@ -6,17 +6,19 @@ import Header from './components/Header';
 import Home from './pages/Home';
 import Articles from './pages/Articles';
 import ArticleDetail from './pages/ArticleDetail';
-import Library from './pages/Library';
+import Ebooks from './pages/Ebooks';
 import EbookDetail from './pages/EbookDetail';
 import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
 import CheckoutSuccess from './pages/CheckoutSuccess';
 import MyLibrary from './pages/MyLibrary';
 import Contact from './pages/Contact';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import AdminLogin from './pages/admin/AdminLogin';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import ArticleForm from './pages/admin/ArticleForm';
-import EbookForm from './pages/admin/EbookForm';
-import DocumentForm from './pages/admin/DocumentForm';
+import AdminDashboard from './pages/AdminDashboard';
+import ArticleEditor from './pages/ArticleEditor';
+import EbookEditor from './pages/EbookEditor';
 
 function App() {
   return (
@@ -38,22 +40,34 @@ function App() {
                   <Articles />
                 </>
               } />
-              <Route path="/library" element={
-                <>
-                  <Header />
-                  <Library />
-                </>
-              } />
               <Route path="/articles/:slug" element={
                 <>
                   <Header />
                   <ArticleDetail />
                 </>
               } />
-              <Route path="/library/:slug" element={
+              <Route path="/ebooks" element={
+                <>
+                  <Header />
+                  <Ebooks />
+                </>
+              } />
+              <Route path="/ebooks/:slug" element={
                 <>
                   <Header />
                   <EbookDetail />
+                </>
+              } />
+              <Route path="/login" element={
+                <>
+                  <Header />
+                  <Login />
+                </>
+              } />
+              <Route path="/register" element={
+                <>
+                  <Header />
+                  <Register />
                 </>
               } />
               <Route path="/cart" element={
@@ -61,6 +75,12 @@ function App() {
                   <Header />
                   <Cart />
                 </>
+              } />
+              <Route path="/checkout" element={
+                <ProtectedRoute>
+                  <Header />
+                  <Checkout />
+                </ProtectedRoute>
               } />
               <Route path="/checkout/success" element={
                 <>
@@ -86,51 +106,27 @@ function App() {
                   <AdminDashboard />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/articles" element={
-                <ProtectedRoute>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } />
               <Route path="/admin/articles/new" element={
                 <ProtectedRoute>
-                  <ArticleForm />
+                  <ArticleEditor />
                 </ProtectedRoute>
               } />
               <Route path="/admin/articles/edit/:id" element={
                 <ProtectedRoute>
-                  <ArticleForm />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/ebooks" element={
-                <ProtectedRoute>
-                  <AdminDashboard />
+                  <ArticleEditor />
                 </ProtectedRoute>
               } />
               <Route path="/admin/ebooks/new" element={
                 <ProtectedRoute>
-                  <EbookForm />
+                  <EbookEditor />
                 </ProtectedRoute>
               } />
               <Route path="/admin/ebooks/edit/:id" element={
                 <ProtectedRoute>
-                  <EbookForm />
+                  <EbookEditor />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/documents" element={
-                <ProtectedRoute>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/documents/new" element={
-                <ProtectedRoute>
-                  <DocumentForm />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/documents/edit/:id" element={
-                <ProtectedRoute>
-                  <DocumentForm />
-                </ProtectedRoute>
-              } />
+
             </Routes>
           </div>
         </Router>

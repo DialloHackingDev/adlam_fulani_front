@@ -6,6 +6,19 @@
   direction: rtl;
 }
 
+/* Styles spécifiques pour les caractères Adlam */
+.adlam-text {
+  font-family: 'Noto Sans Adlam', sans-serif !important;
+  unicode-bidi: plaintext;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-ligatures: common-ligatures;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+}
+
 body {
   direction: rtl;
   text-align: right;
@@ -129,6 +142,13 @@ textarea,
 select {
   direction: rtl;
   text-align: right;
+  font-family: 'Noto Sans Adlam', sans-serif !important;
+  unicode-bidi: plaintext;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-ligatures: common-ligatures;
 }
 
 /* Corrections pour les icônes dans le contexte RTL */
