@@ -62,7 +62,24 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Login error:', error);
       dispatch({ type: 'SET_LOADING', payload: false });
-      return { success: false, error: error.response?.data?.message || 'Login failed' };
+      throw error;
+    }
+  };
+
+  const register = async (name, email, password) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      const response = await apiService.auth.register({ name, email, password });
+      const { token, data } = response.data;
+      const user = data.user;
+      
+      localStorage.setItem('token', token);
+      dispatch({ type: 'LOGIN_SUCCESS', payload: user });
+      
+      return { success: true };
+    } catch (error) {
+      dispatch({ type: 'SET_LOADING', payload: false });
+      throw error;
     }
   };
 
@@ -75,6 +92,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       ...state,
       login,
+      register,
       logout
     }}>
       {children}

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { HiHeart, HiCalendar, HiUser, HiEye } from 'react-icons/hi';
+import { getImageUrl } from '../services/apiService';
 
 const ArticleCard = ({ article }) => {
   const formatDate = (dateString) => {
@@ -27,9 +28,9 @@ const ArticleCard = ({ article }) => {
     <article className="group bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-300 overflow-hidden">
       {/* Image */}
       <div className="aspect-[16/10] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 relative">
-        {article.coverImage ? (
+        {getImageUrl(article.coverImage) ? (
           <img
-            src={article.coverImage}
+            src={getImageUrl(article.coverImage)}
             alt={article.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             onError={(e) => {
@@ -38,7 +39,7 @@ const ArticleCard = ({ article }) => {
             }}
           />
         ) : null}
-        <div className={`absolute inset-0 flex items-center justify-center text-gray-400 text-sm font-medium ${article.coverImage ? 'hidden' : 'flex'}`}>
+        <div className={`absolute inset-0 flex items-center justify-center text-gray-400 text-sm font-medium ${getImageUrl(article.coverImage) ? 'hidden' : 'flex'}`}>
           <div className="text-center">
             <div className="text-4xl mb-2">📰</div>
             <div>𞤐𞤮 𞤢𞤣𞤢𞤲𞤭 𞤸𞤮𞤶𞤢</div>

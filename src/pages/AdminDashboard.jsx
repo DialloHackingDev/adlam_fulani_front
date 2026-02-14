@@ -85,7 +85,8 @@ const AdminDashboard = () => {
   };
 
   const sidebarItems = [
-    { id: 'dashboard', name: '𞤃𞤢𞤧𞤦𞤮𞤪𞤣', icon: HiHome },
+    { id: 'home', name: '𞤪𞤵𞤼𞤢𞤲 𞤫 𞤀𞤧𞤵𞤤', icon: HiHome, isLink: true, href: '/' },
+    { id: 'dashboard', name: '𞤃𞤢𞤧𞤦𞤮𞤪𞤣', icon: HiChartBar },
     { id: 'articles', name: '𞤃𞤢𞤦𞤢𞤤𞤫', icon: HiDocumentText },
     { id: 'ebooks', name: '𞤃𞤫𞤧𞤫', icon: HiBookOpen },
     { id: 'users', name: '𞤖𞤮𞤪𞤦𞤫', icon: HiUsers },
@@ -204,7 +205,7 @@ const AdminDashboard = () => {
       )}
 
       {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed top-4 right-4 z-50">
+      <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-2 bg-white rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
@@ -228,10 +229,10 @@ const AdminDashboard = () => {
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <div className={`
-          fixed lg:static inset-y-0 right-0 z-40
-          lg:w-64 w-64 bg-white shadow-lg border-r border-gray-200 lg:min-h-screen
+          fixed lg:static inset-y-0 left-0 z-40
+          lg:w-64 w-64 bg-white shadow-lg border-l border-gray-200 lg:min-h-screen
           transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="p-4 sm:p-6 border-b border-gray-200">
             <h2 className="text-lg sm:text-xl font-bold text-gray-900" dir="rtl">
@@ -241,22 +242,35 @@ const AdminDashboard = () => {
           
           <nav className="flex flex-col overflow-y-auto mt-6">
             {sidebarItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setSidebarOpen(false);
-                }}
-                className={`w-full flex items-center px-4 sm:px-6 py-3 text-left transition-colors duration-200 ${
-                  activeTab === item.id
-                    ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`}
-                dir="rtl"
-              >
-                <item.icon className="h-4 w-4 sm:h-5 sm:w-5 ml-2 sm:ml-3" />
-                <span className="text-sm sm:text-base">{item.name}</span>
-              </button>
+              item.isLink ? (
+                <Link
+                  key={item.id}
+                  to={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className="w-full flex items-center px-4 sm:px-6 py-3 text-left transition-colors duration-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  dir="rtl"
+                >
+                  <item.icon className="h-4 w-4 sm:h-5 sm:w-5 ml-2 sm:ml-3" />
+                  <span className="text-sm sm:text-base">{item.name}</span>
+                </Link>
+              ) : (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center px-4 sm:px-6 py-3 text-left transition-colors duration-200 ${
+                    activeTab === item.id
+                      ? 'bg-blue-50 text-blue-600 border-l-2 border-blue-600'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                  dir="rtl"
+                >
+                  <item.icon className="h-4 w-4 sm:h-5 sm:w-5 ml-2 sm:ml-3" />
+                  <span className="text-sm sm:text-base">{item.name}</span>
+                </button>
+              )
             ))}
           </nav>
         </div>

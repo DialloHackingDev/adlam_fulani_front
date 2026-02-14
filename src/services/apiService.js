@@ -2,6 +2,14 @@ import axios from 'axios';
 
 // Configuration de base
 const API_BASE_URL = 'http://localhost:5000/api/v1';
+const BASE_URL = 'http://localhost:5000';
+
+// Fonction utilitaire pour obtenir l'URL complète des images
+export const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (imagePath.startsWith('http')) return imagePath;
+  return `${BASE_URL}${imagePath}`;
+};
 
 // Instance axios avec configuration
 const apiClient = axios.create({
@@ -190,6 +198,11 @@ export const apiService = {
     getMessage: (id) => apiClient.get(`/admin/contact/messages/${id}`),
     markAsRead: (id) => apiClient.patch(`/admin/contact/messages/${id}/read`),
     delete: (id) => apiClient.delete(`/admin/contact/messages/${id}`),
+  },
+
+  // ==================== UTILS ====================
+  utils: {
+    getImageUrl,
   },
 };
 

@@ -305,18 +305,44 @@ const ArticleDetail = () => {
                 )}
 
                 {/* Article Content */}
-                <article className="prose prose-xl max-w-none" dir="rtl">
+                <article className="prose prose-lg max-w-none" dir="rtl">
                     <div
-                        className="text-gray-800 leading-relaxed"
+                        className="text-gray-800 leading-relaxed break-words overflow-wrap-anywhere"
                         style={{
                             fontFamily: 'Noto Sans Adlam, serif',
-                            fontSize: '1.125rem',
+                            fontSize: 'clamp(1rem, 2.5vw, 1.125rem)',
                             lineHeight: '1.8',
-                            textAlign: 'right'
+                            textAlign: 'right',
+                            wordBreak: 'break-word',
+                            overflowWrap: 'break-word',
+                            maxWidth: '100%'
                         }}
                         dangerouslySetInnerHTML={{ __html: article.content }}
                     />
                 </article>
+                <style>{`
+                    article img {
+                        max-width: 100%;
+                        height: auto;
+                        border-radius: 0.5rem;
+                        margin: 1.5rem 0;
+                    }
+                    article table {
+                        width: 100%;
+                        overflow-x: auto;
+                        display: block;
+                    }
+                    article pre {
+                        max-width: 100%;
+                        overflow-x: auto;
+                        padding: 1rem;
+                        background: #f3f4f6;
+                        border-radius: 0.5rem;
+                    }
+                    article * {
+                        max-width: 100%;
+                    }
+                `}</style>
 
                 {/* Tags */}
                 {article.tags && article.tags.length > 0 && (

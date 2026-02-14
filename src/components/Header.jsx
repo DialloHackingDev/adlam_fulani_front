@@ -36,6 +36,11 @@ const Header = () => {
     { name: '𞤔𞤮𞤲𞤲𞤣𞤭', href: '/contact', current: location.pathname === '/contact' },
   ];
 
+  // Ajouter l'onglet Admin si l'utilisateur est admin
+  if (user && user.role === 'admin') {
+    navigation.push({ name: '⚙️ 𞤀𞤣𞤥𞤭𞤲', href: '/admin', current: location.pathname.startsWith('/admin') });
+  }
+
   const handleLogout = () => {
     logout();
     setIsUserMenuOpen(false);
@@ -136,16 +141,6 @@ const Header = () => {
                         >
                           <span>𞤃𞤫𞤧𞤫 𞤀𞤥</span>
                         </Link>
-                        {user.role === 'admin' && (
-                          <Link
-                            to="/admin"
-                            onClick={() => setIsUserMenuOpen(false)}
-                            className="flex items-center px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
-                            dir="rtl"
-                          >
-                            <span>⚙️ 𞤀𞤣𞤥𞤭𞤲</span>
-                          </Link>
-                        )}
                         <button
                           onClick={handleLogout}
                           className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center space-x-2 space-x-reverse"

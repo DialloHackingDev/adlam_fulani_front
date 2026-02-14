@@ -186,7 +186,7 @@ const RichTextEditor = ({ value, onChange, placeholder = "𞤖𞤢𞤤𞤢𞤲�
         suppressContentEditableWarning={true}
       />
 
-      <style jsx>{`
+      <style>{`
         [contenteditable]:empty:before {
           content: attr(data-placeholder);
           color: #9CA3AF;

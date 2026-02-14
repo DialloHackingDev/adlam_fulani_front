@@ -33,7 +33,8 @@ const Login = () => {
 
     try {
       await login(formData.email, formData.password);
-      navigate(from, { replace: true });
+      // Rediriger tous les utilisateurs (admin inclus) vers la page d'accueil
+      navigate('/', { replace: true });
     } catch (error) {
       setError(error.response?.data?.message || 'خطأ في تسجيل الدخول');
     } finally {
