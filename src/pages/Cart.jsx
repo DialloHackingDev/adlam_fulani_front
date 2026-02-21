@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { HiTrash, HiShoppingBag, HiArrowLeft } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
+import { getImageUrl } from '../services/apiService';
 
 const Cart = () => {
   const { items, loading, fetchCart, removeFromCart, clearCart } = useCart();
@@ -155,7 +156,7 @@ const Cart = () => {
                 const author = ebook.author || item.author || 'Auteur inconnu';
                 const price = ebook.price || item.price || 0;
                 const coverImage = ebook.coverImage || item.coverImage;
-                const imageUrl = coverImage ? `http://localhost:5000${coverImage}` : null;
+                const imageUrl = getImageUrl(coverImage);
                 
                 return (
                   <div
@@ -172,10 +173,11 @@ const Cart = () => {
                               alt={title}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = '';
-                                e.target.style.display = 'none';
-                                e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400 text-2xl">📚</div>';
+                                const parent = e.target.parentElement;
+                                if (parent) {
+                                  e.target.style.display = 'none';
+                                  parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400 text-2xl">📚</div>';
+                                }
                               }}
                             />
                           ) : (

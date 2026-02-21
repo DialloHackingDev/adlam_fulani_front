@@ -8,7 +8,10 @@ const BASE_URL = 'http://localhost:5000';
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
   if (imagePath.startsWith('http')) return imagePath;
-  return `${BASE_URL}${imagePath}`;
+  
+  // Encoder l'URL pour gérer les caractères spéciaux (comme les caractères Adlam)
+  const encodedPath = imagePath.split('/').map(segment => encodeURIComponent(segment)).join('/');
+  return `${BASE_URL}${encodedPath}`;
 };
 
 // Instance axios avec configuration

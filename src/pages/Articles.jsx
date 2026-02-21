@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import ArticleCard from '../components/ArticleCard';
+import ArticlesBanner from '../components/ArticlesBanner';
 import { apiService } from '../services/apiService';
 
 const Articles = () => {
@@ -40,6 +41,9 @@ const Articles = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Banner Slider */}
+      <ArticlesBanner />
+      
       {/* Header */}
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">

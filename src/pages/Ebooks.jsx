@@ -11,6 +11,7 @@ import {
   HiChevronDown
 } from 'react-icons/hi';
 import EbookCard from '../components/EbookCard';
+import EbooksBanner from '../components/EbooksBanner';
 import { apiService } from '../services/apiService';
 import { useAuth } from '../context/AuthContext';
 
@@ -77,15 +78,23 @@ const Ebooks = () => {
     }
   };
 
-  const filteredEbooks = ebooks.filter(ebook =>
-    ebook.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    ebook.author?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEbooks = ebooks.filter(ebook => {
+    // Exclure les ebooks featured de la liste principale
+    const isFeatured = featuredEbooks.some(featured => featured._id === ebook._id);
+    if (isFeatured) return false;
+    
+    // Filtrer par recherche
+    return ebook.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ebook.author?.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+      {/* Banner Slider */}
+      <EbooksBanner />
+      
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-black to-gray-800 text-white py-20">
+      <section className="bg-gradient-to-r from-black to-gray-800 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center" dir="rtl">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">

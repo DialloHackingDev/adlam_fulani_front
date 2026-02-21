@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { HiBookOpen, HiDownload, HiEye } from 'react-icons/hi';
+import { HiBookOpen, HiDownload, HiEye, HiStar } from 'react-icons/hi';
+import { getImageUrl } from '../services/apiService';
 
 const MyLibrary = () => {
     const [purchasedEbooks, setPurchasedEbooks] = useState([]);
@@ -71,41 +72,73 @@ const MyLibrary = () => {
                     /* Ebooks Grid */
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                         {purchasedEbooks.map((ebook) => (
-                            <div
+                            <article
                                 key={ebook._id}
-                                className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                                className="group bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-300 overflow-hidden"
                             >
-                                {/* Cover */}
-                                <div className="aspect-[3/4] bg-gray-100">
-                                    <img
-                                        src={ebook.coverImage}
-                                        alt={ebook.title}
-                                        className="w-full h-full object-cover"
-                                    />
+                                {/* Cover Image */}
+                                <div className="aspect-[3/4] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 relative">
+                                    {getImageUrl(ebook.coverImage) ? (
+                                        <img
+                                            src={getImageUrl(ebook.coverImage)}
+                                            alt={ebook.title}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display = 'flex';
+                                            }}
+                                        />
+                                    ) : null}
+                                    <div className={`absolute inset-0 flex items-center justify-center text-gray-400 text-sm font-medium ${getImageUrl(ebook.coverImage) ? 'hidden' : 'flex'}`}>
+                                        <div className="text-center">
+                                            <div className="text-4xl mb-2">📚</div>
+                                            <div>𞤐𞤮 𞤸𞤮𞤼𞤮</div>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                {/* Info */}
-                                <div className="p-4 sm:p-6" dir="rtl">
-                                    <h3 className="text-base sm:text-lg font-bold text-black mb-2 line-clamp-2">
+                                {/* Content */}
+                                <div className="p-6" dir="rtl">
+                                    {/* Title */}
+                                    <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-gray-700 transition-colors leading-tight">
                                         {ebook.title}
                                     </h3>
-                                    <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-                                        {ebook.author}
+
+                                    {/* Author */}
+                                    <p className="text-sm text-gray-600 mb-4 flex items-center">
+                                        <span className="ml-1">𞤫</span>
+                                        <span className="font-medium">{ebook.author || '𞤅𞤢𞤲𞤣𞤭𞤲𞤢𞤤 𞤀𞤣𞤤𞤢𞤥'}</span>
                                     </p>
 
+                                    {/* Rating */}
+                                    <div className="flex items-center mb-4">
+                                        <div className="flex">
+                                            {[...Array(5)].map((_, i) => (
+                                                <HiStar
+                                                    key={i}
+                                                    className={`h-4 w-4 ${
+                                                        i < Math.floor(ebook.rating || 4.5)
+                                                            ? 'text-yellow-400'
+                                                            : 'text-gray-300'
+                                                    }`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+
                                     {/* Actions */}
-                                    <div className="space-y-2">
-                                        <button className="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center text-sm sm:text-base">
-                                            <HiEye className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
+                                    <div className="space-y-2 pt-4 border-t border-gray-100">
+                                        <button className="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center text-sm font-medium">
+                                            <HiEye className="h-4 w-4 ml-2" />
                                             𞤔𞤢𞤲𞤢𞤲
                                         </button>
-                                        <button className="w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center text-sm sm:text-base">
-                                            <HiDownload className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
+                                        <button className="w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center text-sm font-medium">
+                                            <HiDownload className="h-4 w-4 ml-2" />
                                             𞤚𞤫𞤤𞤫𞤧𞤢𞤪𞤶𞤫
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                            </article>
                         ))}
                     </div>
                 )}

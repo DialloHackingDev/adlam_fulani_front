@@ -42,10 +42,12 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (ebookId, quantity = 1) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
+      console.log('Adding to cart:', { ebookId, quantity, type: typeof ebookId });
       await apiService.cart.add({ ebookId, quantity });
       await fetchCart();
     } catch (error) {
       console.error('Error adding to cart:', error);
+      console.error('Error response:', error.response?.data);
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }

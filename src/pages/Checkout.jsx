@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HiCreditCard, HiLockClosed, HiCheckCircle } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
+import { getImageUrl } from '../services/apiService';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -169,8 +170,8 @@ const Checkout = () => {
                   return (
                     <div key={item._id} className="flex items-center space-x-3 space-x-reverse py-3 border-b border-gray-100">
                       <div className="w-12 h-16 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
-                        {ebook.coverImage && (
-                          <img src={ebook.coverImage} alt={title} className="w-full h-full object-cover" />
+                        {getImageUrl(ebook.coverImage) && (
+                          <img src={getImageUrl(ebook.coverImage)} alt={title} className="w-full h-full object-cover" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">

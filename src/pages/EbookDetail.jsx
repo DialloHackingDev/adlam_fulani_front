@@ -15,7 +15,7 @@ import {
 } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { apiService } from '../services/apiService';
+import { apiService, getImageUrl } from '../services/apiService';
 import PDFViewer from '../components/PDFViewer';
 
 const EbookDetail = () => {
@@ -88,11 +88,7 @@ const EbookDetail = () => {
     }).format(price);
   };
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return '/placeholder-book.jpg';
-    if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:5000${imagePath}`;
-  };
+
 
   if (loading) {
     return (

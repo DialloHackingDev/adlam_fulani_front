@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { HiShoppingCart, HiStar, HiEye, HiHeart, HiLockClosed } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { getImageUrl } from '../services/apiService';
 
 const EbookCard = ({ ebook, featured = false }) => {
   const { addToCart, loading } = useCart();
@@ -17,7 +18,7 @@ const EbookCard = ({ ebook, featured = false }) => {
       return;
     }
     
-    await addToCart(ebook._id);
+    await addToCart(String(ebook._id));
   };
 
   const handleReadClick = (e) => {
@@ -40,11 +41,7 @@ const EbookCard = ({ ebook, featured = false }) => {
     }).format(price);
   };
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return '/placeholder-book.jpg';
-    if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:5000${imagePath}`;
-  };
+
 
   return (
     <div className={`group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden border border-gray-100 ${
@@ -62,11 +59,24 @@ const EbookCard = ({ ebook, featured = false }) => {
 
       {/* Cover Image */}
       <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-        <img
-          src={getImageUrl(ebook.coverImage)}
-          alt={ebook.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-        />
+        {getImageUrl(ebook.coverImage) ? (
+          <img
+            src={getImageUrl(ebook.coverImage)}
+            alt={ebook.title}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400"><div class="text-center"><div class="text-6xl mb-2">📚</div><p class="text-sm">𞤐𞤮 𞤸𞤮𞤼𞤮</p></div></div>';
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-400">
+            <div className="text-center">
+              <div className="text-6xl mb-2">📚</div>
+              <p className="text-sm">𞤐𞤮 𞤸𞤮𞤼𞤮</p>
+            </div>
+          </div>
+        )}
         
         {/* Overlay on hover */}
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
