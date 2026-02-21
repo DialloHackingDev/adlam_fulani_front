@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { HiBookOpen, HiDownload, HiEye, HiStar } from 'react-icons/hi';
-import { getImageUrl } from '../services/apiService';
+import { getImageUrl, apiService } from '../services/apiService';
 
 const MyLibrary = () => {
+    const navigate = useNavigate();
     const [purchasedEbooks, setPurchasedEbooks] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -14,16 +15,29 @@ const MyLibrary = () => {
     const fetchPurchasedEbooks = async () => {
         try {
             setLoading(true);
-            // TODO: Implémenter l'API pour récupérer les e-books achetés
-            // const response = await ebooksAPI.getPurchased();
-            // setPurchasedEbooks(response.data.ebooks);
-
-            // Placeholder pour le moment
-            setPurchasedEbooks([]);
+            const response = await apiService.checkout.getPurchasedEbooks();
+            const ebooks = response.data.data?.ebooks || response.data.ebooks || [];
+            setPurchasedEbooks(ebooks);
         } catch (error) {
             console.error('Error fetching purchased ebooks:', error);
+            setPurchasedEbooks([]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleRead = (ebookId) => {
+        navigate(`/ebook-reader/${ebookId}`);
+    };
+
+    const handleDownload = async (ebookId) => {
+        try {
+            const response = await apiService.ebooks.download(ebookId);
+            const downloadUrl = response.data.data.downloadUrl;
+            window.open(downloadUrl, '_blank');
+        } catch (error) {
+            console.error('Error downloading ebook:', error);
+            alert('Erreur lors du téléchargement');
         }
     };
 
@@ -128,11 +142,17 @@ const MyLibrary = () => {
 
                                     {/* Actions */}
                                     <div className="space-y-2 pt-4 border-t border-gray-100">
-                                        <button className="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center text-sm font-medium">
+                                        <button 
+                                            onClick={() => handleRead(ebook._id)}
+                                            className="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center text-sm font-medium"
+                                        >
                                             <HiEye className="h-4 w-4 ml-2" />
                                             𞤔𞤢𞤲𞤢𞤲
                                         </button>
-                                        <button className="w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center text-sm font-medium">
+                                        <button 
+                                            onClick={() => handleDownload(ebook._id)}
+                                            className="w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center text-sm font-medium"
+                                        >
                                             <HiDownload className="h-4 w-4 ml-2" />
                                             𞤚𞤫𞤤𞤫𞤧𞤢𞤪𞤶𞤫
                                         </button>

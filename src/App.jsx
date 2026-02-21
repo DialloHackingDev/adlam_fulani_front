@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute, { UserProtectedRoute } from './components/ProtectedRoute';
 import Header from './components/Header';
 import Home from './pages/Home';
 import Articles from './pages/Articles';
@@ -12,6 +12,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import CheckoutSuccess from './pages/CheckoutSuccess';
 import MyLibrary from './pages/MyLibrary';
+import EbookReader from './pages/EbookReader';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -77,10 +78,10 @@ function App() {
                 </>
               } />
               <Route path="/checkout" element={
-                <ProtectedRoute>
+                <UserProtectedRoute>
                   <Header />
                   <Checkout />
-                </ProtectedRoute>
+                </UserProtectedRoute>
               } />
               <Route path="/checkout/success" element={
                 <>
@@ -89,10 +90,15 @@ function App() {
                 </>
               } />
               <Route path="/my-library" element={
-                <ProtectedRoute>
+                <UserProtectedRoute>
                   <Header />
                   <MyLibrary />
-                </ProtectedRoute>
+                </UserProtectedRoute>
+              } />
+              <Route path="/ebook-reader/:id" element={
+                <UserProtectedRoute>
+                  <EbookReader />
+                </UserProtectedRoute>
               } />
               <Route path="/contact" element={
                 <>

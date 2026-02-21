@@ -99,6 +99,7 @@ export const apiService = {
     
     // User actions
     download: (id) => apiClient.get(`/ebooks/${id}/download`),
+    stream: (id) => `${API_BASE_URL}/ebooks/${id}/stream`,
     
     // Admin
     create: (formData) => apiClient.post('/admin/ebooks', formData, {
@@ -153,6 +154,7 @@ export const apiService = {
     getOrders: () => apiClient.get('/checkout/orders'),
     getOrder: (orderId) => apiClient.get(`/checkout/orders/${orderId}`),
     downloadEbook: (orderId, ebookId) => apiClient.get(`/checkout/orders/${orderId}/download/${ebookId}`),
+    getPurchasedEbooks: () => apiClient.get('/checkout/purchased-ebooks'),
   },
 
   // ==================== ADMIN ====================

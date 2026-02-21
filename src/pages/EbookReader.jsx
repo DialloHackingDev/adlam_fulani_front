@@ -25,10 +25,9 @@ const EbookReader = () => {
       const ebookData = ebookResponse.data.data?.ebook || ebookResponse.data.ebook || ebookResponse.data;
       setEbook(ebookData);
       
-      // Récupérer l'URL de téléchargement sécurisée
-      const downloadResponse = await apiService.ebooks.download(id);
-      const downloadUrl = downloadResponse.data.data.downloadUrl;
-      setPdfUrl(downloadUrl);
+      // Utiliser l'URL du proxy backend
+      const proxyUrl = apiService.ebooks.stream(id);
+      setPdfUrl(proxyUrl);
       
     } catch (error) {
       console.error('Error fetching ebook:', error);

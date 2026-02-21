@@ -8,7 +8,19 @@ import {
 } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/apiService';
+import axios from 'axios';
 import UserManagement from '../components/UserManagement';
+
+const apiClient = axios.create({
+  baseURL: 'http://localhost:5000/api/v1',
+  headers: { 'Content-Type': 'application/json' }
+});
+
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -123,6 +135,31 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error deleting ebook:', error);
       alert('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤃𞤫𞤧𞤮');
+    }
+  };
+
+  const handleToggleEbookStatus = async (id, currentStatus) => {
+    try {
+      const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+      await apiClient.patch(`/ebooks/${id}`, { status: newStatus });
+      
+      const updateEbookStatus = (ebook) => 
+        ebook._id === id ? { ...ebook, status: newStatus } : ebook;
+      
+      setAllEbooks(allEbooks.map(updateEbookStatus));
+      setRecentEbooks(recentEbooks.map(updateEbookStatus));
+      
+      setStats(prev => ({
+        ...prev,
+        ebooks: {
+          ...prev.ebooks,
+          published: newStatus === 'published' ? prev.ebooks.published + 1 : prev.ebooks.published - 1,
+          drafts: newStatus === 'draft' ? prev.ebooks.drafts + 1 : prev.ebooks.drafts - 1
+        }
+      }));
+    } catch (error) {
+      console.error('Error toggling ebook status:', error);
+      alert('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤅𞤼𞤢𞤼𞤵𞤧');
     }
   };
 
@@ -401,13 +438,17 @@ const AdminDashboard = () => {
                         <div className="flex-1 min-w-0 mr-2" dir="rtl">
                           <h4 className="text-sm sm:text-base font-medium text-gray-900 truncate">{ebook.title}</h4>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${
-                              ebook.status === 'published' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {ebook.status}
-                            </span>
+                            <button
+                              onClick={() => handleToggleEbookStatus(ebook._id, ebook.status)}
+                              className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full cursor-pointer transition-colors ${
+                                ebook.status === 'published' 
+                                  ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                  : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                              }`}
+                              title="𞤑𞤤𞤭𞤳 𞤫 𞤸𞤢𞤤𞤢𞤲 𞤅𞤼𞤢𞤼𞤵𞤧"
+                            >
+                              {ebook.status === 'published' ? '✓ published' : '○ draft'}
+                            </button>
                             <span className="text-xs text-gray-500">{ebook.price} GNF</span>
                           </div>
                         </div>
@@ -575,13 +616,17 @@ const AdminDashboard = () => {
                             {ebook.author}
                           </td>
                           <td className="px-4 sm:px-6 py-3 sm:py-4">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              ebook.status === 'published' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {ebook.status}
-                            </span>
+                            <button
+                              onClick={() => handleToggleEbookStatus(ebook._id, ebook.status)}
+                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full cursor-pointer transition-colors ${
+                                ebook.status === 'published' 
+                                  ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                  : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                              }`}
+                              title="𞤑𞤤𞤭𞤳 𞤫 𞤸𞤢𞤤𞤢𞤲 𞤅𞤼𞤢𞤼𞤵𞤧"
+                            >
+                              {ebook.status === 'published' ? '✓ published' : '○ draft'}
+                            </button>
                           </td>
                           <td className="px-4 sm:px-6 py-3 sm:py-4 text-sm text-gray-500">
                             {new Date(ebook.createdAt).toLocaleDateString()}

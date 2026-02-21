@@ -22,6 +22,24 @@ const PDFViewer = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [scale, setScale] = useState(1.0);
 
+  // Ajouter le token d'authentification à l'URL du PDF
+  const getAuthenticatedPdfUrl = () => {
+    if (!pdfUrl) return null;
+    
+    // Si l'URL contient déjà le token ou est une URL Cloudinary directe, la retourner telle quelle
+    if (pdfUrl.includes('cloudinary.com')) {
+      return pdfUrl;
+    }
+    
+    // Sinon, ajouter le token dans les headers via httpHeaders
+    return pdfUrl;
+  };
+
+  // Configuration pour ajouter le token aux requêtes PDF
+  const httpHeaders = {
+    'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+  };
+
   // Plugins
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
     toolbarPlugin: {
@@ -156,7 +174,11 @@ const PDFViewer = ({
         
         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
           <Viewer
-            fileUrl={pdfUrl}
+            fileUrl={{
+              url: getAuthenticatedPdfUrl(),
+              httpHeaders: httpHeaders,
+              withCredentials: false
+            }}
             plugins={[
               defaultLayoutPluginInstance,
               zoomPluginInstance,

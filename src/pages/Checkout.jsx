@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { HiCreditCard, HiLockClosed, HiCheckCircle } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../services/apiService';
+import { apiService } from '../services/apiService';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -29,17 +30,32 @@ const Checkout = () => {
     e.preventDefault();
     setProcessing(true);
 
-    // Simulation de paiement (3 secondes)
-    setTimeout(() => {
+    try {
+      // 1. Créer une session de paiement
+      const sessionResponse = await apiService.checkout.createSession({});
+      const { paymentIntentId } = sessionResponse.data.data;
+
+      // 2. Simuler le paiement (3 secondes)
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // 3. Confirmer le paiement
+      await apiService.checkout.confirmPayment({ paymentIntentId });
+
       setProcessing(false);
       setPaymentSuccess(true);
       
-      // Vider le panier après 2 secondes
+      // Vider le panier et rediriger après 2 secondes
       setTimeout(() => {
         clearCart();
         navigate('/my-library');
       }, 2000);
-    }, 3000);
+    } catch (error) {
+      console.error('Payment error:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      setProcessing(false);
+      alert(`Erreur lors du paiement: ${error.response?.data?.message || error.message}`);
+    }
   };
 
   if (paymentSuccess) {
