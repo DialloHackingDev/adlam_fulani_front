@@ -155,6 +155,7 @@ export const apiService = {
     getOrder: (orderId) => apiClient.get(`/checkout/orders/${orderId}`),
     downloadEbook: (orderId, ebookId) => apiClient.get(`/checkout/orders/${orderId}/download/${ebookId}`),
     getPurchasedEbooks: () => apiClient.get('/checkout/purchased-ebooks'),
+    addFreeEbook: (ebookId) => apiClient.post('/checkout/add-free-ebook', { ebookId }),
   },
 
   // ==================== ADMIN ====================

@@ -13,8 +13,15 @@ const EbookReader = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Vérifier que l'utilisateur est connecté
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login', { state: { from: `/ebook-reader/${id}` } });
+      return;
+    }
+    
     fetchEbookAndPdf();
-  }, [id]);
+  }, [id, navigate]);
 
   const fetchEbookAndPdf = async () => {
     try {
@@ -38,6 +45,30 @@ const EbookReader = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(apiService.ebooks.stream(id), {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (!response.ok) throw new Error('Erreur de téléchargement');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${ebook.title}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Erreur téléchargement:', error);
+      alert('Impossible de télécharger le fichier');
     }
   };
 
@@ -95,7 +126,7 @@ const EbookReader = () => {
             
             <div className="flex items-center space-x-2 space-x-reverse">
               <button
-                onClick={() => window.print()}
+                onClick={handleDownload}
                 className="hidden sm:flex items-center px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >
                 <HiDownload className="h-5 w-5 ml-2" />

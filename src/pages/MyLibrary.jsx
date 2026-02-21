@@ -32,9 +32,23 @@ const MyLibrary = () => {
 
     const handleDownload = async (ebookId) => {
         try {
-            const response = await apiService.ebooks.download(ebookId);
-            const downloadUrl = response.data.data.downloadUrl;
-            window.open(downloadUrl, '_blank');
+            const token = localStorage.getItem('token');
+            const response = await fetch(apiService.ebooks.stream(ebookId), {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!response.ok) throw new Error('Erreur de téléchargement');
+            
+            const blob = await response.blob();
+            const ebook = purchasedEbooks.find(e => e._id === ebookId);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${ebook?.title || 'ebook'}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
         } catch (error) {
             console.error('Error downloading ebook:', error);
             alert('Erreur lors du téléchargement');

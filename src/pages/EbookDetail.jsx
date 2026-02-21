@@ -54,28 +54,68 @@ const EbookDetail = () => {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!user) {
       navigate('/login', { state: { from: `/ebooks/${slug}` } });
       return;
     }
+    
+    // Si l'ebook est gratuit, l'ajouter à la bibliothèque puis rediriger
+    if (ebook.price === 0) {
+      try {
+        await apiService.checkout.addFreeEbook(ebook._id);
+        navigate(`/ebook-reader/${ebook._id}`);
+      } catch (error) {
+        console.error('Error adding free ebook:', error);
+        navigate(`/ebook-reader/${ebook._id}`);
+      }
+      return;
+    }
+    
     addToCart(ebook._id);
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!user) {
       navigate('/login', { state: { from: `/ebooks/${slug}` } });
       return;
     }
+    
+    // Si l'ebook est gratuit, l'ajouter à la bibliothèque puis rediriger
+    if (ebook.price === 0) {
+      try {
+        await apiService.checkout.addFreeEbook(ebook._id);
+        navigate(`/ebook-reader/${ebook._id}`);
+      } catch (error) {
+        console.error('Error adding free ebook:', error);
+        navigate(`/ebook-reader/${ebook._id}`);
+      }
+      return;
+    }
+    
     addToCart(ebook._id);
     navigate('/cart');
   };
 
-  const handleReadClick = () => {
+  const handleReadClick = async () => {
     if (!user) {
       navigate('/login', { state: { from: `/ebooks/${slug}` } });
       return;
     }
+    
+    // Si l'ebook est gratuit, l'ajouter à la bibliothèque puis rediriger
+    if (ebook.price === 0) {
+      try {
+        await apiService.checkout.addFreeEbook(ebook._id);
+        navigate(`/ebook-reader/${ebook._id}`);
+      } catch (error) {
+        console.error('Error adding free ebook:', error);
+        // Rediriger quand même si déjà dans la bibliothèque
+        navigate(`/ebook-reader/${ebook._id}`);
+      }
+      return;
+    }
+    
     setActiveTab('preview');
   };
 
@@ -159,35 +199,48 @@ const EbookDetail = () => {
               
               {/* Quick Actions */}
               <div className="mt-6 space-y-3">
-                <button
-                  onClick={handleReadClick}
-                  className="w-full bg-black text-white py-4 px-6 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2 space-x-reverse"
-                  dir="rtl"
-                >
-                  {!user ? <HiLockClosed className="h-5 w-5 ml-2" /> : <HiBookOpen className="h-5 w-5 ml-2" />}
-                  <span>{user ? '𞤑𞤢𞤪𞤢𞤲 𞤔𞤮𞤲𞤭' : '𞤔𞤮𞤲𞤲𞤣𞤭 𞤫 𞤑𞤢𞤪𞤢𞤲'}</span>
-                </button>
-                
-                {ebook.price > 0 && (
+                {ebook.price === 0 ? (
+                  // Ebook gratuit - Bouton de lecture directe
                   <button
-                    onClick={handleBuyNow}
-                    disabled={cartLoading}
-                    className="w-full bg-white border-2 border-black text-black py-4 px-6 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    onClick={handleReadClick}
+                    className="w-full bg-black text-white py-4 px-6 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2 space-x-reverse"
                     dir="rtl"
                   >
-                    𞤧𞤢𞤴𞤢𞤲 𞤔𞤮𞤲𞤭
+                    {!user ? <HiLockClosed className="h-5 w-5 ml-2" /> : <HiBookOpen className="h-5 w-5 ml-2" />}
+                    <span>{user ? '𞤑𞤢𞤪𞤢𞤲 𞤔𞤮𞤲𞤭 (𞤀𞤦𞤫𞤧𞤫)' : '𞤔𞤮𞤲𞤲𞤣𞤭 𞤫 𞤑𞤢𞤪𞤢𞤲'}</span>
                   </button>
+                ) : (
+                  // Ebook payant - Boutons normaux
+                  <>
+                    <button
+                      onClick={handleReadClick}
+                      className="w-full bg-black text-white py-4 px-6 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2 space-x-reverse"
+                      dir="rtl"
+                    >
+                      {!user ? <HiLockClosed className="h-5 w-5 ml-2" /> : <HiBookOpen className="h-5 w-5 ml-2" />}
+                      <span>{user ? '𞤑𞤢𞤪𞤢𞤲 𞤔𞤮𞤲𞤭' : '𞤔𞤮𞤲𞤲𞤣𞤭 𞤫 𞤑𞤢𞤪𞤢𞤲'}</span>
+                    </button>
+                    
+                    <button
+                      onClick={handleBuyNow}
+                      disabled={cartLoading}
+                      className="w-full bg-white border-2 border-black text-black py-4 px-6 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                      dir="rtl"
+                    >
+                      𞤧𞤢𞤴𞤢𞤲 𞤔𞤮𞤲𞤭
+                    </button>
+                    
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={cartLoading}
+                      className="w-full bg-gray-100 text-gray-800 py-4 px-6 rounded-xl font-medium hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2 space-x-reverse disabled:opacity-50"
+                      dir="rtl"
+                    >
+                      {!user ? <HiLockClosed className="h-5 w-5 ml-2" /> : <HiShoppingCart className="h-5 w-5 ml-2" />}
+                      <span>{user ? '𞤑𞤢𞤦𞤢𞤤 𞤫 𞤨𞤢𞤲𞤭𞤴𞤫' : '𞤔𞤮𞤲𞤲𞤣𞤭 𞤫 𞤧𞤢𞤴𞤢𞤲'}</span>
+                    </button>
+                  </>
                 )}
-                
-                <button
-                  onClick={handleAddToCart}
-                  disabled={cartLoading}
-                  className="w-full bg-gray-100 text-gray-800 py-4 px-6 rounded-xl font-medium hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2 space-x-reverse disabled:opacity-50"
-                  dir="rtl"
-                >
-                  {!user ? <HiLockClosed className="h-5 w-5 ml-2" /> : <HiShoppingCart className="h-5 w-5 ml-2" />}
-                  <span>{user ? '𞤑𞤢𞤦𞤢𞤤 𞤫 𞤨𞤢𞤲𞤭𞤴𞤫' : '𞤔𞤮𞤲𞤲𞤣𞤭 𞤫 𞤧𞤢𞤴𞤢𞤲'}</span>
-                </button>
               </div>
             </div>
           </div>

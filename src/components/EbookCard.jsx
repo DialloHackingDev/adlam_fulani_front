@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { HiShoppingCart, HiStar, HiEye, HiHeart, HiLockClosed } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { getImageUrl } from '../services/apiService';
+import { getImageUrl, apiService } from '../services/apiService';
 
 const EbookCard = ({ ebook, featured = false }) => {
   const { addToCart, loading } = useCart();
@@ -18,14 +18,38 @@ const EbookCard = ({ ebook, featured = false }) => {
       return;
     }
     
+    // Si l'ebook est gratuit, l'ajouter à la bibliothèque puis rediriger
+    if (ebook.price === 0) {
+      try {
+        await apiService.checkout.addFreeEbook(ebook._id);
+        navigate(`/ebook-reader/${ebook._id}`);
+      } catch (error) {
+        console.error('Error adding free ebook:', error);
+        navigate(`/ebook-reader/${ebook._id}`);
+      }
+      return;
+    }
+    
     await addToCart(String(ebook._id));
   };
 
-  const handleReadClick = (e) => {
+  const handleReadClick = async (e) => {
     e.preventDefault();
     
     if (!user) {
       navigate('/login', { state: { from: `/ebooks/${ebook.slug}` } });
+      return;
+    }
+    
+    // Si l'ebook est gratuit, l'ajouter à la bibliothèque puis rediriger
+    if (ebook.price === 0) {
+      try {
+        await apiService.checkout.addFreeEbook(ebook._id);
+        navigate(`/ebook-reader/${ebook._id}`);
+      } catch (error) {
+        console.error('Error adding free ebook:', error);
+        navigate(`/ebook-reader/${ebook._id}`);
+      }
       return;
     }
     
@@ -154,7 +178,7 @@ const EbookCard = ({ ebook, featured = false }) => {
               onClick={handleAddToCart}
               disabled={loading}
               className="bg-black text-white p-3 rounded-full hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group/btn"
-              title={user ? '𞤑𞤢𞤦𞤢𞤤 𞤫 𞤨𞤢𞤲𞤭𞤴𞤫' : '𞤔𞤮𞤲𞤲𞤣𞤭 𞤫 𞤧𞤢𞤴𞤢𞤲'}
+              title={ebook.price === 0 ? '𞤑𞤢𞤪𞤢𞤲 𞤔𞤮𞤲𞤭' : (user ? '𞤑𞤢𞤦𞤢𞤤 𞤫 𞤨𞤢𞤲𞤭𞤴𞤫' : '𞤔𞤮𞤲𞤲𞤣𞤭 𞤫 𞤧𞤢𞤴𞤢𞤲')}
             >
               {!user ? (
                 <HiLockClosed className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
