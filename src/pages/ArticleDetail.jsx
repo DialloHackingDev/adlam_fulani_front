@@ -304,40 +304,72 @@ const ArticleDetail = () => {
                 {/* Article Content */}
                 <article className="prose prose-lg max-w-none" dir="rtl">
                     <div
-                        className="text-gray-800 leading-relaxed break-words overflow-wrap-anywhere"
+                        className="text-gray-800 leading-relaxed"
                         style={{
                             fontFamily: 'Noto Sans Adlam, serif',
                             fontSize: 'clamp(1rem, 2.5vw, 1.125rem)',
                             lineHeight: '1.8',
                             textAlign: 'right',
-                            wordBreak: 'break-word',
+                            wordWrap: 'break-word',
                             overflowWrap: 'break-word',
-                            maxWidth: '100%'
+                            wordBreak: 'break-word',
+                            hyphens: 'auto'
                         }}
                         dangerouslySetInnerHTML={{ __html: article.content }}
                     />
                 </article>
                 <style>{`
-                    article img {
+                    article {
                         max-width: 100%;
-                        height: auto;
+                        overflow-x: hidden;
+                    }
+                    article * {
+                        max-width: 100% !important;
+                        word-wrap: break-word !important;
+                        overflow-wrap: break-word !important;
+                    }
+                    article img {
+                        max-width: 100% !important;
+                        height: auto !important;
                         border-radius: 0.5rem;
                         margin: 1.5rem 0;
-                    }
-                    article table {
-                        width: 100%;
-                        overflow-x: auto;
                         display: block;
                     }
+                    article table {
+                        width: 100% !important;
+                        overflow-x: auto;
+                        display: block;
+                        border-collapse: collapse;
+                    }
                     article pre {
-                        max-width: 100%;
+                        max-width: 100% !important;
                         overflow-x: auto;
                         padding: 1rem;
                         background: #f3f4f6;
                         border-radius: 0.5rem;
+                        white-space: pre-wrap;
+                        word-wrap: break-word;
                     }
-                    article * {
-                        max-width: 100%;
+                    article code {
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
+                    }
+                    article p, article div, article span {
+                        word-wrap: break-word !important;
+                        overflow-wrap: break-word !important;
+                        max-width: 100% !important;
+                    }
+                    article iframe, article video {
+                        max-width: 100% !important;
+                        height: auto !important;
+                    }
+                    @media (max-width: 640px) {
+                        article {
+                            font-size: 0.95rem;
+                        }
+                        article h1 { font-size: 1.5rem; }
+                        article h2 { font-size: 1.3rem; }
+                        article h3 { font-size: 1.1rem; }
                     }
                 `}</style>
 
