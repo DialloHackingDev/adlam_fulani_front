@@ -55,7 +55,6 @@ const PDFViewer = ({
         const blobUrl = URL.createObjectURL(blob);
         setPdfBlob(blobUrl);
       } catch (err) {
-        console.error('Erreur chargement PDF:', err);
         if (err.response?.status === 401) {
           setError('Session expirée. Veuillez vous reconnecter.');
           setTimeout(() => {

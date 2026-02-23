@@ -24,22 +24,16 @@ const HeroBanner = () => {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        console.log('🔍 HeroBanner: Fetching articles...');
         // Récupérer tous les articles sans filtre status
         const response = await apiService.articles.getAll({ limit: 5 });
-        console.log('📦 HeroBanner: Response:', response.data);
         
         const articlesData = response.data.data?.articles || response.data.articles || [];
-        console.log('📊 HeroBanner: Articles count:', articlesData.length);
         
         if (articlesData.length > 0) {
-          console.log('🖼️ HeroBanner: First article coverImage:', articlesData[0].coverImage);
-          console.log('🔗 HeroBanner: Processed URL:', getImageUrl(articlesData[0].coverImage));
         }
         
         setArticles(articlesData);
       } catch (error) {
-        console.error('❌ HeroBanner: Error fetching articles:', error);
         // Fallback avec des données vides
         setArticles([]);
       } finally {
@@ -103,9 +97,7 @@ const HeroBanner = () => {
             src={currentArticle.coverImage}
             alt={currentArticle.title}
             className="w-full h-full object-cover"
-            onLoad={() => console.log('✅ Image loaded:', currentArticle.coverImage)}
             onError={(e) => {
-              console.error('❌ Image failed to load:', currentArticle.coverImage);
               e.target.style.display = 'none';
             }}
           />

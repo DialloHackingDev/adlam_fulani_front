@@ -24,7 +24,6 @@ const EbookCard = ({ ebook, featured = false }) => {
         await apiService.checkout.addFreeEbook(ebook._id);
         navigate(`/ebook-reader/${ebook._id}`);
       } catch (error) {
-        console.error('Error adding free ebook:', error);
         navigate(`/ebook-reader/${ebook._id}`);
       }
       return;
@@ -47,7 +46,6 @@ const EbookCard = ({ ebook, featured = false }) => {
         await apiService.checkout.addFreeEbook(ebook._id);
         navigate(`/ebook-reader/${ebook._id}`);
       } catch (error) {
-        console.error('Error adding free ebook:', error);
         navigate(`/ebook-reader/${ebook._id}`);
       }
       return;

@@ -28,7 +28,6 @@ const UserManagement = () => {
       setUsers(response.data.data?.users || []);
       setTotalPages(response.data.pagination?.pages || 1);
     } catch (error) {
-      console.error('Erreur lors du chargement des utilisateurs:', error);
     } finally {
       setLoading(false);
     }
@@ -40,7 +39,6 @@ const UserManagement = () => {
         await apiService.admin.deleteUser(userId);
         fetchUsers();
       } catch (error) {
-        console.error('Erreur lors de la suppression:', error);
         alert('Erreur lors de la suppression de l\'utilisateur');
       }
     }

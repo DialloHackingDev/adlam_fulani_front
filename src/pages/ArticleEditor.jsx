@@ -76,7 +76,6 @@ const ArticleEditor = () => {
         setImagePreview(article.coverImage);
       }
     } catch (error) {
-      console.error('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤃𞤢𞤦𞤢𞤤:', error);
     } finally {
       setLoading(false);
     }
@@ -170,7 +169,6 @@ const ArticleEditor = () => {
         navigate('/admin');
       }
     } catch (error) {
-      console.error('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤅𞤢𞤦𞤢𞤲𞤣𞤫:', error);
       alert('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤅𞤢𞤦𞤢𞤲𞤣𞤫 𞤃𞤢𞤦𞤢𞤤');
     } finally {
       setSaving(false);

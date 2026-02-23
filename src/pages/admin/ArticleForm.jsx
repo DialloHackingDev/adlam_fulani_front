@@ -55,7 +55,6 @@ const ArticleForm = () => {
         published: article.status === 'published'
       });
     } catch (error) {
-      console.error('Error fetching article:', error);
       alert('Erreur lors du chargement de l\'article');
     } finally {
       setLoading(false);
@@ -89,9 +88,7 @@ const ArticleForm = () => {
       }
 
       // Debug: afficher les données envoyées
-      console.log('Données envoyées:');
       for (let [key, value] of submitData.entries()) {
-        console.log(key, value);
       }
 
       let response;
@@ -101,12 +98,9 @@ const ArticleForm = () => {
         response = await apiService.articles.create(submitData);
       }
 
-      console.log('Réponse du serveur:', response.data);
       alert(isEdit ? 'Article mis à jour avec succès!' : 'Article créé avec succès!');
       navigate('/admin/articles');
     } catch (error) {
-      console.error('Error saving article:', error);
-      console.error('Error response:', error.response?.data);
       alert(`Erreur: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);

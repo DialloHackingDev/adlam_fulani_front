@@ -1,9 +1,8 @@
 import axios from 'axios';
 
 // Configuration de base
-const API_BASE_URL = 'http://localhost:5000/api/v1';
-const BASE_URL = 'http://localhost:5000';
-
+const API_BASE_URL = 'https://dougoussali.onrender.com/api/v1';
+const BASE_URL = 'https://dougoussali.onrender.com';
 // Fonction utilitaire pour obtenir l'URL complète des images
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return null;

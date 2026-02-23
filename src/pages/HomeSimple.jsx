@@ -10,25 +10,19 @@ const HomeSimple = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        console.log('Fetching data...');
         
         const [articlesResponse, ebooksResponse] = await Promise.all([
           apiService.articles.getAll(),
           apiService.ebooks.getAll()
         ]);
         
-        console.log('Articles response:', articlesResponse.data);
-        console.log('Ebooks response:', ebooksResponse.data);
         
         const articles = articlesResponse.data.data?.articles || [];
         const ebooks = ebooksResponse.data.data?.ebooks || [];
         
-        console.log('Parsed articles:', articles);
-        console.log('Parsed ebooks:', ebooks);
         
         setData({ articles, ebooks });
       } catch (err) {
-        console.error('Error fetching data:', err);
         setError(err.message);
       } finally {
         setLoading(false);

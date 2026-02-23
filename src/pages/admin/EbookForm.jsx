@@ -59,7 +59,6 @@ const EbookForm = () => {
         published: ebook.status === 'published'
       });
     } catch (error) {
-      console.error('Error fetching ebook:', error);
       alert('Erreur lors du chargement de l\'e-book');
     } finally {
       setLoading(false);
@@ -88,9 +87,7 @@ const EbookForm = () => {
       }
 
       // Debug: afficher les données envoyées
-      console.log('Données envoyées:');
       for (let [key, value] of submitData.entries()) {
-        console.log(key, value);
       }
 
       let response;
@@ -100,12 +97,9 @@ const EbookForm = () => {
         response = await apiService.ebooks.create(submitData);
       }
 
-      console.log('Réponse du serveur:', response.data);
       alert(isEdit ? 'E-book mis à jour avec succès!' : 'E-book créé avec succès!');
       navigate('/admin/ebooks');
     } catch (error) {
-      console.error('Error saving ebook:', error);
-      console.error('Error response:', error.response?.data);
       alert(`Erreur: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);

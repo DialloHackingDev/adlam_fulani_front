@@ -92,7 +92,6 @@ const EbookEditor = () => {
         setCoverPreview(ebook.coverImage);
       }
     } catch (error) {
-      console.error('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤃𞤫𞤧𞤮𞤮𞤳:', error);
     } finally {
       setLoading(false);
     }
@@ -192,7 +191,6 @@ const EbookEditor = () => {
         navigate('/admin');
       }
     } catch (error) {
-      console.error('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤅𞤢𞤦𞤢𞤲𞤣𞤫:', error);
       alert('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤅𞤢𞤦𞤢𞤲𞤣𞤫 𞤃𞤫𞤧𞤮𞤮𞤳');
     } finally {
       setSaving(false);

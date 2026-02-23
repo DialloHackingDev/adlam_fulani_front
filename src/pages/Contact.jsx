@@ -44,7 +44,6 @@ const Contact = () => {
       setTimeout(() => setSubmitted(false), 5000);
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {
-      console.error('Error sending contact message:', error);
       setError(error.response?.data?.message || '𞤖𞤢𞤤𞤢𞤲𞤣𞤫 𞤲𞤫𞤤𞤤𞤢𞤲𞤣𞤫 𞤫 𞤚𞤢𞤥𞤭𞤪. 𞤊𞤭𞤪𞤭𞤼𞤮 𞤫𞤲 𞤪𞤭𞤲𞤢𞤲.');
     } finally {
       setIsSubmitting(false);

@@ -72,7 +72,6 @@ const Ebooks = () => {
       setFeaturedEbooks(featured);
       
     } catch (error) {
-      console.error('❌ Error fetching ebooks:', error);
     } finally {
       setLoading(false);
     }

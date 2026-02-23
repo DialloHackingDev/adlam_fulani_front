@@ -21,7 +21,6 @@ const CommentsSection = ({ articleId }) => {
       const response = await apiService.comments.getByArticle(articleId, { sort: sortBy });
       setComments(response.data.comments);
     } catch (error) {
-      console.error('Error fetching comments:', error);
     } finally {
       setLoading(false);
     }
@@ -42,7 +41,6 @@ const CommentsSection = ({ articleId }) => {
       setNewComment('');
       fetchComments();
     } catch (error) {
-      console.error('Error creating comment:', error);
     }
   };
 
@@ -61,7 +59,6 @@ const CommentsSection = ({ articleId }) => {
       setReplyingTo(null);
       fetchComments();
     } catch (error) {
-      console.error('Error creating reply:', error);
     }
   };
 
@@ -70,7 +67,6 @@ const CommentsSection = ({ articleId }) => {
       await apiService.comments.like(commentId);
       fetchComments();
     } catch (error) {
-      console.error('Error liking comment:', error);
     }
   };
 
@@ -79,7 +75,6 @@ const CommentsSection = ({ articleId }) => {
       await apiService.comments.report(commentId);
       alert('𞤅𞤭𞤧𞤼𞤫𞤥 𞤲𞤣𞤫 𞤸𞤢𞤤𞤭 𞤧𞤭𞤲𞤢𞤤𞤭𞥄𞤲');
     } catch (error) {
-      console.error('Error reporting comment:', error);
     }
   };
 

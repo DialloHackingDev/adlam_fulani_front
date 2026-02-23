@@ -80,7 +80,6 @@ const AdminDashboard = () => {
         }
       });
     } catch (error) {
-      console.error('Error fetching data:', error);
       // En cas d'erreur, utiliser des valeurs par défaut
       setStats({
         totalArticles: 0,
@@ -100,7 +99,6 @@ const AdminDashboard = () => {
         setArticles(articles.filter(article => article._id !== id));
         setStats(prev => ({ ...prev, totalArticles: prev.totalArticles - 1 }));
       } catch (error) {
-        console.error('Error deleting article:', error);
       }
     }
   };
@@ -112,7 +110,6 @@ const AdminDashboard = () => {
         setEbooks(ebooks.filter(ebook => ebook._id !== id));
         setStats(prev => ({ ...prev, totalEbooks: prev.totalEbooks - 1 }));
       } catch (error) {
-        console.error('Error deleting ebook:', error);
       }
     }
   };

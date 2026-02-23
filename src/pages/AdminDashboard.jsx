@@ -90,7 +90,6 @@ const AdminDashboard = () => {
         }
       });
     } catch (error) {
-      console.error('Erreur lors du chargement des données:', error);
     } finally {
       setLoading(false);
     }
@@ -117,7 +116,6 @@ const AdminDashboard = () => {
       }));
       setDeleteModal({ show: false, type: '', id: '', title: '' });
     } catch (error) {
-      console.error('Error deleting article:', error);
       alert('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤃𞤢𞤦𞤢𞤤');
     }
   };
@@ -133,7 +131,6 @@ const AdminDashboard = () => {
       }));
       setDeleteModal({ show: false, type: '', id: '', title: '' });
     } catch (error) {
-      console.error('Error deleting ebook:', error);
       alert('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤃𞤫𞤧𞤮');
     }
   };
@@ -158,7 +155,6 @@ const AdminDashboard = () => {
         }
       }));
     } catch (error) {
-      console.error('Error toggling ebook status:', error);
       alert('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤅𞤼𞤢𞤼𞤵𞤧');
     }
   };

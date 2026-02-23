@@ -27,7 +27,6 @@ const ArticlesBanner = () => {
         const articlesData = response.data.data?.articles || response.data.articles || [];
         setArticles(articlesData);
       } catch (error) {
-        console.error('Error fetching articles:', error);
         setArticles([]);
       } finally {
         setLoading(false);

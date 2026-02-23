@@ -66,7 +66,6 @@ const AdminDashboard = () => {
         }
       });
     } catch (error) {
-      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -80,7 +79,6 @@ const AdminDashboard = () => {
         // Mettre à jour les stats
         setStats(prev => ({ ...prev, totalArticles: prev.totalArticles - 1 }));
       } catch (error) {
-        console.error('Error deleting article:', error);
       }
     }
   };
@@ -93,7 +91,6 @@ const AdminDashboard = () => {
         // Mettre à jour les stats
         setStats(prev => ({ ...prev, totalEbooks: prev.totalEbooks - 1 }));
       } catch (error) {
-        console.error('Error deleting ebook:', error);
       }
     }
   };

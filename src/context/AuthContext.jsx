@@ -44,23 +44,18 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      console.log('Attempting login with:', email);
       
       const response = await apiService.auth.login({ email, password });
-      console.log('Login response:', response.data);
       
       const { token, data } = response.data;
       const user = data.user;
-      console.log('Token:', token, 'User:', user);
       
       // Stocker le token
       localStorage.setItem('token', token);
       dispatch({ type: 'LOGIN_SUCCESS', payload: user });
       
-      console.log('Login successful, user role:', user.role);
       return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
       dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
     }

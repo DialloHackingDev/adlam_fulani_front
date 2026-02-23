@@ -52,7 +52,6 @@ const ArticleDetail = () => {
             setArticle(articleData);
             setLikesCount(articleData.likes || 0);
         } catch (error) {
-            console.error('Error fetching article:', error);
             if (error.response?.status === 404) {
                 navigate('/articles');
             }
@@ -67,7 +66,6 @@ const ArticleDetail = () => {
             setLikesCount(prev => liked ? prev - 1 : prev + 1);
             await apiService.articles.toggleLike(article._id);
         } catch (error) {
-            console.error('Error toggling like:', error);
             setLiked(!liked);
             setLikesCount(prev => liked ? prev + 1 : prev - 1);
         }
@@ -86,7 +84,6 @@ const ArticleDetail = () => {
                     url: window.location.href
                 });
             } catch (error) {
-                console.log('Share cancelled');
             }
         } else {
             await navigator.clipboard.writeText(window.location.href);

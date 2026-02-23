@@ -33,7 +33,6 @@ const Home = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        console.log('🔄 Fetching home page data...');
         
         const [allResponse, featuredResponse, recentResponse, ebooksResponse] = await Promise.allSettled([
           apiService.articles.getAll({ limit: 50 }),
@@ -41,13 +40,6 @@ const Home = () => {
           apiService.articles.getRecent(6),
           apiService.ebooks.getRecent(3)
         ]);
-        
-        console.log('📊 API Responses:', {
-          all: allResponse.status,
-          featured: featuredResponse.status,
-          recent: recentResponse.status,
-          ebooks: ebooksResponse.status
-        });
         
         const allArticles = allResponse.status === 'fulfilled' 
           ? (allResponse.value?.data?.data?.articles || allResponse.value?.data?.articles || [])
@@ -64,13 +56,6 @@ const Home = () => {
         const ebooks = ebooksResponse.status === 'fulfilled'
           ? (ebooksResponse.value?.data?.data?.ebooks || ebooksResponse.value?.data?.ebooks || [])
           : [];
-        
-        console.log('📈 Processed data:', {
-          allArticles: allArticles.length,
-          featured: featured.length,
-          recent: recent.length,
-          ebooks: ebooks.length
-        });
         
         // Use recent articles as featured if no featured articles exist
         // If no recent articles, use any available articles
@@ -95,10 +80,8 @@ const Home = () => {
           totalReads: totalViews + totalLikes
         });
         
-        console.log('✅ Home data loaded successfully');
         
       } catch (error) {
-        console.error('❌ Error fetching home data:', error);
         setStats({ totalArticles: 0, totalEbooks: 0, totalReads: 0 });
       } finally {
         setLoading(false);

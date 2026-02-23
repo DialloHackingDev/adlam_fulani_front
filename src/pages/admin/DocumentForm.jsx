@@ -50,7 +50,6 @@ const DocumentForm = () => {
         published: document.status === 'published'
       });
     } catch (error) {
-      console.error('Error fetching document:', error);
       alert('Erreur lors du chargement du document');
     } finally {
       setLoading(false);
@@ -89,12 +88,9 @@ const DocumentForm = () => {
         response = await apiService.documents.create(submitData);
       }
 
-      console.log('Réponse du serveur:', response.data);
       alert(isEdit ? 'Document mis à jour avec succès!' : 'Document créé avec succès!');
       navigate('/admin/documents');
     } catch (error) {
-      console.error('Error saving document:', error);
-      console.error('Error response:', error.response?.data);
       alert(`Erreur: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);

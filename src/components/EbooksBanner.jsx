@@ -15,7 +15,6 @@ const EbooksBanner = () => {
         const ebooksData = response.data.data?.ebooks || response.data.ebooks || [];
         setEbooks(ebooksData);
       } catch (error) {
-        console.error('Error fetching ebooks:', error);
         setEbooks([]);
       } finally {
         setLoading(false);

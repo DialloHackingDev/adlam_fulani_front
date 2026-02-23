@@ -45,7 +45,6 @@ const EbookDetail = () => {
         setIsPurchased(false);
       }
     } catch (error) {
-      console.error('Error fetching ebook:', error);
       if (error.response?.status === 404) {
         navigate('/ebooks');
       }
@@ -66,7 +65,6 @@ const EbookDetail = () => {
         await apiService.checkout.addFreeEbook(ebook._id);
         navigate(`/ebook-reader/${ebook._id}`);
       } catch (error) {
-        console.error('Error adding free ebook:', error);
         navigate(`/ebook-reader/${ebook._id}`);
       }
       return;
@@ -87,7 +85,6 @@ const EbookDetail = () => {
         await apiService.checkout.addFreeEbook(ebook._id);
         navigate(`/ebook-reader/${ebook._id}`);
       } catch (error) {
-        console.error('Error adding free ebook:', error);
         navigate(`/ebook-reader/${ebook._id}`);
       }
       return;
@@ -109,7 +106,6 @@ const EbookDetail = () => {
         await apiService.checkout.addFreeEbook(ebook._id);
         navigate(`/ebook-reader/${ebook._id}`);
       } catch (error) {
-        console.error('Error adding free ebook:', error);
         // Rediriger quand même si déjà dans la bibliothèque
         navigate(`/ebook-reader/${ebook._id}`);
       }

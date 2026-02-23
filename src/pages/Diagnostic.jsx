@@ -19,7 +19,6 @@ const Diagnostic = () => {
           const response = await fetch('http://localhost:5000/api/v1/articles');
           tests.articles = response.ok;
         } catch (e) {
-          console.error('Articles API error:', e);
         }
 
         // Test ebooks
@@ -27,7 +26,6 @@ const Diagnostic = () => {
           const response = await fetch('http://localhost:5000/api/v1/ebooks');
           tests.ebooks = response.ok;
         } catch (e) {
-          console.error('Ebooks API error:', e);
         }
 
         // Test auth
@@ -39,7 +37,6 @@ const Diagnostic = () => {
           });
           tests.auth = response.status !== 0;
         } catch (e) {
-          console.error('Auth API error:', e);
         }
 
         // Test documents
@@ -47,7 +44,6 @@ const Diagnostic = () => {
           const response = await fetch('http://localhost:5000/api/v1/documents');
           tests.documents = response.ok;
         } catch (e) {
-          console.error('Documents API error:', e);
         }
 
         setApiStatus(tests);

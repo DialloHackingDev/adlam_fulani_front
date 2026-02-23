@@ -29,7 +29,6 @@ const SimilarArticles = ({ categoryId, currentArticleId }) => {
       const data = await response.json();
       setArticles(data.articles || []);
     } catch (error) {
-      console.error('Error fetching similar articles:', error);
       setArticles([]);
     } finally {
       setLoading(false);

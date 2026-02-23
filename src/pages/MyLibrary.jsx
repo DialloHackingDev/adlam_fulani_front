@@ -19,7 +19,6 @@ const MyLibrary = () => {
             const ebooks = response.data.data?.ebooks || response.data.ebooks || [];
             setPurchasedEbooks(ebooks);
         } catch (error) {
-            console.error('Error fetching purchased ebooks:', error);
             setPurchasedEbooks([]);
         } finally {
             setLoading(false);
@@ -50,7 +49,6 @@ const MyLibrary = () => {
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
         } catch (error) {
-            console.error('Error downloading ebook:', error);
             alert('Erreur lors du téléchargement');
         }
     };

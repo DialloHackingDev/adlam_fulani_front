@@ -37,7 +37,6 @@ const EbookReader = () => {
       setPdfUrl(proxyUrl);
       
     } catch (error) {
-      console.error('Error fetching ebook:', error);
       if (error.response?.status === 403) {
         setError('Vous n\'avez pas accès à ce livre');
       } else {
@@ -67,7 +66,6 @@ const EbookReader = () => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Erreur téléchargement:', error);
       alert('Impossible de télécharger le fichier');
     }
   };
