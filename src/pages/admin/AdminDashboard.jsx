@@ -103,6 +103,19 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleTogglePublish = async (id, currentStatus) => {
+    try {
+      await apiService.articles.togglePublished(id);
+      setArticles(articles.map(article => 
+        article._id === id 
+          ? { ...article, status: currentStatus === 'published' ? 'draft' : 'published' }
+          : article
+      ));
+    } catch (error) {
+      console.error('Erreur lors du changement de statut:', error);
+    }
+  };
+
   const handleDeleteEbook = async (id) => {
     if (window.confirm('𞤀 𞤴𞤮𞤲𞤢𞤲 𞤃𞤫𞤧𞤮 𞤲𞤣𞤫 𞤸𞤢𞤤𞤢𞤲?')) {
       try {
@@ -281,6 +294,9 @@ const AdminDashboard = () => {
                           𞤑𞤢𞼺𞤫𞤺𞤮𞥄𞤪𞤭
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          𞤅𞤢𞤼𞤵𞥅
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                           𞤚𞤢𞤥𞤭𞤪
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -307,6 +323,17 @@ const AdminDashboard = () => {
                               {article.category}
                             </span>
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              article.status === 'published' 
+                                ? 'bg-green-100 text-green-800' 
+                                : article.status === 'draft'
+                                ? 'bg-gray-100 text-gray-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {article.status === 'published' ? '𞤅𞤢𞤪𞤭𞤲𞤣𞤫' : article.status === 'draft' ? '𞤄𞤪𞤢𞤬𞤺' : '𞤅𞤤𞤢𞤲𞤭𞤲𞤣𞤫'}
+                            </span>
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {formatDate(article.createdAt)}
                           </td>
@@ -318,6 +345,17 @@ const AdminDashboard = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                             <div className="flex space-x-2 space-x-reverse sm:space-x-2 sm:space-x-reverse">
+                              <button
+                                onClick={() => handleTogglePublish(article._id, article.status)}
+                                className={`px-2 py-1 rounded text-xs font-medium ${
+                                  article.status === 'published'
+                                    ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                                    : 'bg-green-100 text-green-800 hover:bg-green-200'
+                                }`}
+                                title={article.status === 'published' ? '𞤄𞤪𞤢𞤬𞤺' : '𞤅𞤢𞤪𞤭𞤲𞤣𞤫'}
+                              >
+                                {article.status === 'published' ? '𞤄𞤪𞤢𞤬𞤺' : '𞤅𞤢𞤪𞤭𞤲𞤣𞤫'}
+                              </button>
                               <Link
                                 to={`/articles/${article.slug}`}
                                 className="text-gray-600 hover:text-gray-900 p-1 sm:p-0"

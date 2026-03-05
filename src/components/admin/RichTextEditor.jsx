@@ -53,11 +53,11 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
     }
   };
 
-  const handleKeyPress = (e) => {
-    const char = e.key;
-    if (frenchToAdlam[char]) {
+  const handleKeyDown = (e) => {
+    // Ne pas bloquer la saisie sur mobile
+    if (e.key && e.key.length === 1 && frenchToAdlam[e.key]) {
       e.preventDefault();
-      insertTextAtCursor(frenchToAdlam[char]);
+      insertTextAtCursor(frenchToAdlam[e.key]);
       handleContentChange();
     }
   };
@@ -134,10 +134,12 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
           textAlign: 'right',
           fontFamily: 'Noto Sans Adlam, sans-serif',
           lineHeight: '1.6',
-          unicodeBidi: 'plaintext'
+          unicodeBidi: 'plaintext',
+          WebkitUserSelect: 'text',
+          userSelect: 'text'
         }}
         onInput={handleContentChange}
-        onKeyPress={handleKeyPress}
+        onKeyDown={handleKeyDown}
         suppressContentEditableWarning={true}
         data-placeholder={placeholder}
       />

@@ -247,7 +247,7 @@ const ArticleDetail = () => {
             </div>
 
             {/* Main Content */}
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
                 {/* Action Bar */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-gray-50 rounded-2xl p-4 sm:p-6 mb-8 sm:mb-12 gap-4 sm:gap-0" dir="rtl">
                     <div className="flex items-center space-x-4 sm:space-x-6 space-x-reverse w-full sm:w-auto">
@@ -294,97 +294,195 @@ const ArticleDetail = () => {
 
                 {/* Article Excerpt */}
                 {article.excerpt && (
-                    <div className="bg-gradient-to-r from-gray-50 to-white border-r-4 border-black p-8 mb-12 rounded-2xl" dir="rtl">
-                        <p className="text-xl text-gray-700 leading-relaxed font-medium">
+                    <div className="bg-gradient-to-r from-gray-50 to-white border-r-4 border-black p-4 sm:p-6 md:p-8 mb-8 sm:mb-12 rounded-2xl" dir="rtl">
+                        <p className="text-lg sm:text-xl text-gray-700 leading-relaxed font-medium">
                             {article.excerpt}
                         </p>
                     </div>
                 )}
 
                 {/* Article Content */}
-                <article className="prose prose-lg max-w-none" dir="rtl">
+                <article className="prose prose-lg w-full max-w-full" dir="rtl">
                     <div
-                        className="text-gray-800 leading-relaxed"
+                        className="text-gray-800 w-full"
                         style={{
                             fontFamily: 'Noto Sans Adlam, serif',
-                            fontSize: 'clamp(1rem, 2.5vw, 1.125rem)',
-                            lineHeight: '1.8',
+                            fontSize: 'clamp(1rem, 2.5vw, 1.25rem)',
+                            lineHeight: '2',
                             textAlign: 'right',
                             wordWrap: 'break-word',
                             overflowWrap: 'break-word',
-                            wordBreak: 'break-word',
-                            hyphens: 'auto'
+                            maxWidth: '100%'
                         }}
                         dangerouslySetInnerHTML={{ __html: article.content }}
                     />
                 </article>
                 <style>{`
+                    /* Container principal */
                     article {
-                        max-width: 100%;
-                        overflow-x: hidden;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        overflow-wrap: break-word !important;
                     }
+                    
+                    /* Tous les éléments */
                     article * {
                         max-width: 100% !important;
                         word-wrap: break-word !important;
                         overflow-wrap: break-word !important;
+                        box-sizing: border-box !important;
                     }
-                    article img {
-                        max-width: 100% !important;
-                        height: auto !important;
-                        border-radius: 0.5rem;
-                        margin: 1.5rem 0;
-                        display: block;
+                    
+                    /* Paragraphes et texte */
+                    article p {
+                        margin-bottom: 1.5rem;
+                        line-height: 2;
+                        word-wrap: break-word !important;
+                        overflow-wrap: break-word !important;
                     }
-                    article table {
-                        width: 100% !important;
-                        overflow-x: auto;
-                        display: block;
-                        border-collapse: collapse;
-                    }
-                    article pre {
-                        max-width: 100% !important;
-                        overflow-x: auto;
-                        padding: 1rem;
-                        background: #f3f4f6;
-                        border-radius: 0.5rem;
-                        white-space: pre-wrap;
-                        word-wrap: break-word;
-                    }
-                    article code {
-                        word-wrap: break-word;
-                        overflow-wrap: break-word;
-                    }
-                    article p, article div, article span {
+                    
+                    article div, article span, article li {
                         word-wrap: break-word !important;
                         overflow-wrap: break-word !important;
                         max-width: 100% !important;
                     }
-                    article iframe, article video {
+                    
+                    /* Images */
+                    article img {
                         max-width: 100% !important;
                         height: auto !important;
+                        border-radius: 0.75rem;
+                        margin: 2rem auto;
+                        display: block;
+                        object-fit: contain;
                     }
+                    
+                    /* Tables */
+                    article table {
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        overflow-x: auto !important;
+                        display: block !important;
+                        border-collapse: collapse;
+                        margin: 2rem 0;
+                    }
+                    
+                    article table td, article table th {
+                        padding: 0.75rem;
+                        word-wrap: break-word !important;
+                        overflow-wrap: break-word !important;
+                    }
+                    
+                    /* Code blocks */
+                    article pre {
+                        max-width: 100% !important;
+                        overflow-x: auto !important;
+                        padding: 1.5rem;
+                        background: #f3f4f6;
+                        border-radius: 0.75rem;
+                        white-space: pre-wrap !important;
+                        word-wrap: break-word !important;
+                        margin: 2rem 0;
+                    }
+                    
+                    article code {
+                        word-wrap: break-word !important;
+                        overflow-wrap: break-word !important;
+                        white-space: pre-wrap !important;
+                        font-size: 0.9em;
+                    }
+                    
+                    /* Iframes et vidéos */
+                    article iframe, article video, article embed, article object {
+                        max-width: 100% !important;
+                        width: 100% !important;
+                        height: auto !important;
+                        margin: 2rem 0;
+                    }
+                    
+                    /* Listes */
+                    article ul, article ol {
+                        padding-right: 2rem;
+                        padding-left: 0;
+                        max-width: 100% !important;
+                        margin: 1.5rem 0;
+                    }
+                    
+                    article li {
+                        margin-bottom: 0.75rem;
+                        line-height: 1.8;
+                    }
+                    
+                    /* Titres */
+                    article h1, article h2, article h3, article h4, article h5, article h6 {
+                        word-wrap: break-word !important;
+                        overflow-wrap: break-word !important;
+                        max-width: 100% !important;
+                        margin-top: 2.5rem;
+                        margin-bottom: 1.5rem;
+                        line-height: 1.4;
+                    }
+                    
+                    article h1 { font-size: 2rem; }
+                    article h2 { font-size: 1.75rem; }
+                    article h3 { font-size: 1.5rem; }
+                    
+                    /* Blockquotes */
+                    article blockquote {
+                        border-right: 4px solid #000;
+                        padding-right: 1.5rem;
+                        margin: 2rem 0;
+                        font-style: italic;
+                        color: #4b5563;
+                    }
+                    
+                    /* Responsive mobile */
                     @media (max-width: 640px) {
                         article {
-                            font-size: 0.95rem;
+                            font-size: 1rem !important;
                         }
-                        article h1 { font-size: 1.5rem; }
-                        article h2 { font-size: 1.3rem; }
-                        article h3 { font-size: 1.1rem; }
+                        article h1 { font-size: 1.5rem !important; }
+                        article h2 { font-size: 1.35rem !important; }
+                        article h3 { font-size: 1.2rem !important; }
+                        article img {
+                            margin: 1.5rem auto !important;
+                            border-radius: 0.5rem;
+                        }
+                        article table {
+                            font-size: 0.875rem !important;
+                        }
+                        article pre {
+                            padding: 1rem !important;
+                            font-size: 0.875rem !important;
+                        }
+                        article ul, article ol {
+                            padding-right: 1.25rem;
+                        }
+                    }
+                    
+                    /* Responsive desktop large */
+                    @media (min-width: 1024px) {
+                        article {
+                            font-size: 1.125rem !important;
+                        }
+                        article p {
+                            margin-bottom: 2rem;
+                        }
                     }
                 `}</style>
 
                 {/* Tags */}
                 {article.tags && article.tags.length > 0 && (
-                    <div className="mt-16 pt-8 border-t border-gray-200" dir="rtl">
-                        <h3 className="text-lg font-bold text-black mb-4 flex items-center">
-                            <HiTag className="h-5 w-5 ml-2" />
+                    <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-200" dir="rtl">
+                        <h3 className="text-base sm:text-lg font-bold text-black mb-3 sm:mb-4 flex items-center">
+                            <HiTag className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
                             𞤚𞤢𞤺𞤫
                         </h3>
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-2 sm:gap-3">
                             {article.tags.map((tag, index) => (
                                 <span
                                     key={index}
-                                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer"
+                                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer"
                                 >
                                     #{tag}
                                 </span>
@@ -394,30 +492,30 @@ const ArticleDetail = () => {
                 )}
 
                 {/* Share Section */}
-                <div className="mt-16 pt-8 border-t border-gray-200 bg-gray-50 rounded-2xl p-8" dir="rtl">
-                    <h3 className="text-xl font-bold text-black mb-6">𞤧𞤢𞤪𞤫 𞤃𞤢𞤦𞤢𞤤 𞤲𞤣𞤫</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-200 bg-gray-50 rounded-2xl p-4 sm:p-6 md:p-8" dir="rtl">
+                    <h3 className="text-lg sm:text-xl font-bold text-black mb-4 sm:mb-6">𞤧𞤢𞤪𞤫 𞤃𞤢𞤦𞤢𞤤 𞤲𞤣𞤫</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                         <button
                             onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
-                            className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors font-medium"
+                            className="bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base"
                         >
                             Facebook
                         </button>
                         <button
                             onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(article.title)}`, '_blank')}
-                            className="bg-sky-500 text-white px-6 py-3 rounded-xl hover:bg-sky-600 transition-colors font-medium"
+                            className="bg-sky-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-sky-600 transition-colors font-medium text-sm sm:text-base"
                         >
                             Twitter
                         </button>
                         <button
                             onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(article.title + ' ' + window.location.href)}`, '_blank')}
-                            className="bg-green-600 text-white px-6 py-3 rounded-xl hover:bg-green-700 transition-colors font-medium"
+                            className="bg-green-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-green-700 transition-colors font-medium text-sm sm:text-base"
                         >
                             WhatsApp
                         </button>
                         <button
                             onClick={handleShare}
-                            className="bg-gray-600 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors font-medium"
+                            className="bg-gray-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-gray-700 transition-colors font-medium text-sm sm:text-base"
                         >
                             𞤂𞤭𞤲𞤳 𞤳𞤮𞤨𞤭
                         </button>

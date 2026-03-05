@@ -6,11 +6,21 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 // Fonction utilitaire pour obtenir l'URL complète des images
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
+  
+  // Si c'est déjà une URL Cloudinary, la retourner telle quelle
+  if (imagePath.includes('cloudinary.com')) return imagePath;
+  
+  // Si c'est une URL localhost, la remplacer par l'URL du backend
+  if (imagePath.startsWith('http://localhost')) {
+    return imagePath.replace('http://localhost:5000', BASE_URL);
+  }
+  
+  // Si c'est une URL complète (http/https), la retourner telle quelle
   if (imagePath.startsWith('http')) return imagePath;
   
-  // Encoder l'URL pour gérer les caractères spéciaux (comme les caractères Adlam)
-  const encodedPath = imagePath.split('/').map(segment => encodeURIComponent(segment)).join('/');
-  return `${BASE_URL}${encodedPath}`;
+  // Si c'est un chemin relatif, ajouter le BASE_URL
+  const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  return `${BASE_URL}${cleanPath}`;
 };
 
 // Instance axios avec configuration
