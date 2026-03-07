@@ -25,6 +25,10 @@ const EbookEditor = () => {
     metaDescription: '',
     keywords: [],
     previewPages: 10,
+    pages: 0,
+    isbn: '',
+    publisher: '',
+    publishedDate: '',
     coverImage: null,
     pdfFile: null
   });
@@ -184,9 +188,9 @@ const EbookEditor = () => {
       submitData.append('price', formData.price);
       submitData.append('pages', formData.pages);
       submitData.append('language', formData.language);
-      submitData.append('isbn', formData.isbn.trim());
-      submitData.append('publisher', formData.publisher.trim());
-      submitData.append('publishedDate', formData.publishedDate);
+      submitData.append('isbn', formData.isbn?.trim() || '');
+      submitData.append('publisher', formData.publisher?.trim() || '');
+      submitData.append('publishedDate', formData.publishedDate || '');
       
       // Fichiers
       if (formData.coverImage) {
