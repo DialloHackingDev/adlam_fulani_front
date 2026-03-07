@@ -210,8 +210,21 @@ const EbookEditor = () => {
 
       let response;
       if (isEditing) {
+        // En mode édition, n'envoyer que les champs modifiés
+        // Ne pas envoyer de FormData vide pour les fichiers
         response = await apiService.ebooks.update(id, submitData);
       } else {
+        // En mode création, validation des fichiers requis
+        if (!formData.coverImage) {
+          alert('𞤖𞤢𞤤𞤢𞤲𞤣𞤫 𞤐𞤢𞤼𞤢𞤤 𞤑𞤢𞤾𞤢');
+          setSaving(false);
+          return;
+        }
+        if (!formData.pdfFile) {
+          alert('𞤖𞤢𞤤𞤢𞤲𞤣𞤫 𞤆𞤄𞤊 𞤃𞤫𞤧𞤮𞤮𞤳');
+          setSaving(false);
+          return;
+        }
         response = await apiService.ebooks.create(submitData);
       }
 
