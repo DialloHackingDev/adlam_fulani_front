@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
+import { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { apiService } from '../services/apiService';
 
 const CartContext = createContext();
@@ -39,35 +39,7 @@ export const CartProvider = ({ children }) => {
     loading: false
   });
 
-  const addToCart = async (ebookId, quantity = 1) => {
-    try {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      await apiService.cart.add({ ebookId, quantity });
-      await fetchCart();
-    } catch (error) {
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
-    }
-  };
-
-  const removeFromCart = async (ebookId) => {
-    try {
-      await apiService.cart.remove(ebookId);
-      dispatch({ type: 'REMOVE_ITEM', payload: ebookId });
-      await fetchCart(); // Recharger le panier complet
-    } catch (error) {
-    }
-  };
-
-  const clearCart = async () => {
-    try {
-      await apiService.cart.clear();
-      dispatch({ type: 'CLEAR_CART' });
-    } catch (error) {
-    }
-  };
-
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.cart.get();
@@ -81,9 +53,9 @@ export const CartProvider = ({ children }) => {
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  };
+  }, []);
 
-  const fetchCartCount = async () => {
+  const fetchCartCount = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -96,11 +68,39 @@ export const CartProvider = ({ children }) => {
     } catch (error) {
       dispatch({ type: 'SET_COUNT', payload: 0 });
     }
-  };
+  }, []);
+
+  const addToCart = useCallback(async (ebookId, quantity = 1) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      await apiService.cart.add({ ebookId, quantity });
+      await fetchCart();
+    } catch (error) {
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  }, [fetchCart]);
+
+  const removeFromCart = useCallback(async (ebookId) => {
+    try {
+      await apiService.cart.remove(ebookId);
+      dispatch({ type: 'REMOVE_ITEM', payload: ebookId });
+      await fetchCart(); // Recharger le panier complet
+    } catch (error) {
+    }
+  }, [fetchCart]);
+
+  const clearCart = useCallback(async () => {
+    try {
+      await apiService.cart.clear();
+      dispatch({ type: 'CLEAR_CART' });
+    } catch (error) {
+    }
+  }, []);
 
   useEffect(() => {
     fetchCartCount();
-  }, []);
+  }, [fetchCartCount]);
 
   return (
     <CartContext.Provider value={{

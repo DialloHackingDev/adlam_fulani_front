@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
+import { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { apiService } from '../services/apiService';
 
 const AuthContext = createContext();
@@ -23,11 +23,7 @@ export const AuthProvider = ({ children }) => {
     loading: true
   });
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
@@ -39,9 +35,13 @@ export const AuthProvider = ({ children }) => {
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  };
+  }, []);
 
-  const login = async (email, password) => {
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  const login = useCallback(async (email, password) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       
@@ -59,9 +59,9 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
     }
-  };
+  }, []);
 
-  const register = async (name, email, password) => {
+  const register = useCallback(async (name, email, password) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.auth.register({ name, email, password });
@@ -76,12 +76,12 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     dispatch({ type: 'LOGOUT' });
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{

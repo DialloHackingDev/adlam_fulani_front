@@ -4,6 +4,45 @@
 * {
   font-family: 'Noto Sans Adlam', 'Ebrima', 'Segoe UI Historic', sans-serif !important;
   direction: rtl;
+  box-sizing: border-box;
+}
+
+/* Prévention débordement global */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+#root {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Tous les conteneurs */
+.container, div, section, article, main {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Images responsive */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Vidéos et iframes responsive */
+iframe, video, embed, object {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Tables responsive */
+table {
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
 }
 
 /* Styles spécifiques pour les caractères Adlam */
@@ -196,9 +235,36 @@ select {
 }
 
 /* Responsive typography */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   body {
     font-size: 14px;
+  }
+
+  h1 {
+    font-size: 1.5rem !important;
+    line-height: 1.3;
+  }
+
+  h2 {
+    font-size: 1.35rem !important;
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: 1.2rem !important;
+    line-height: 1.4;
+  }
+  
+  /* Padding réduit sur mobile */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  body {
+    font-size: 15px;
   }
 
   h1 {
@@ -211,6 +277,19 @@ select {
 
   h3 {
     font-size: 1.25rem;
+  }
+}
+
+/* Touch-friendly sur mobile */
+@media (max-width: 768px) {
+  button, a, input, select, textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Espacement touch-friendly */
+  .btn, .link {
+    padding: 0.75rem 1rem;
   }
 }
 

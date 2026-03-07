@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { HiArrowLeft, HiSave, HiEye, HiUpload } from 'react-icons/hi';
 import RichTextEditor from '../components/RichTextEditor';
@@ -52,7 +52,7 @@ const ArticleEditor = () => {
     }
   }, [user, navigate, id, isEditing]);
 
-  const fetchArticle = async () => {
+  const fetchArticle = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiService.articles.getById(id);
@@ -79,21 +79,21 @@ const ArticleEditor = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-  };
+  }, []);
 
-  const handleContentChange = (content) => {
+  const handleContentChange = useCallback((content) => {
     setFormData(prev => ({ ...prev, content }));
-  };
+  }, []);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = useCallback((e) => {
     const file = e.target.files[0];
     if (file) {
       setFormData(prev => ({ ...prev, coverImage: file }));
@@ -102,9 +102,9 @@ const ArticleEditor = () => {
       reader.onload = (e) => setImagePreview(e.target.result);
       reader.readAsDataURL(file);
     }
-  };
+  }, []);
 
-  const addTag = () => {
+  const addTag = useCallback(() => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
       setFormData(prev => ({
         ...prev,
@@ -112,16 +112,16 @@ const ArticleEditor = () => {
       }));
       setTagInput('');
     }
-  };
+  }, [tagInput, formData.tags]);
 
-  const removeTag = (tagToRemove) => {
+  const removeTag = useCallback((tagToRemove) => {
     setFormData(prev => ({
       ...prev,
       tags: prev.tags.filter(tag => tag !== tagToRemove)
     }));
-  };
+  }, []);
 
-  const addKeyword = () => {
+  const addKeyword = useCallback(() => {
     if (keywordInput.trim() && !formData.keywords.includes(keywordInput.trim())) {
       setFormData(prev => ({
         ...prev,
@@ -129,16 +129,16 @@ const ArticleEditor = () => {
       }));
       setKeywordInput('');
     }
-  };
+  }, [keywordInput, formData.keywords]);
 
-  const removeKeyword = (keywordToRemove) => {
+  const removeKeyword = useCallback((keywordToRemove) => {
     setFormData(prev => ({
       ...prev,
       keywords: prev.keywords.filter(keyword => keyword !== keywordToRemove)
     }));
-  };
+  }, []);
 
-  const handleSave = async (status = formData.status) => {
+  const handleSave = useCallback(async (status = formData.status) => {
     try {
       setSaving(true);
       
@@ -173,7 +173,7 @@ const ArticleEditor = () => {
     } finally {
       setSaving(false);
     }
-  };
+  }, [formData, isEditing, id, navigate]);
 
   if (loading) {
     return (

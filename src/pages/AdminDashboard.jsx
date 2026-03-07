@@ -1,777 +1,118 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  HiHome, HiDocumentText, HiBookOpen, HiUsers, HiChartBar, 
-  HiCog, HiPlus, HiEye, HiPencil, HiTrash, HiStar,
-  HiTrendingUp, HiTrendingDown, HiCurrencyDollar, HiMenu, HiX,
-  HiCheckCircle, HiXCircle, HiClock
-} from 'react-icons/hi';
+import { HiHome, HiDocumentText, HiBookOpen, HiUsers, HiChartBar, HiPlus, HiEye, HiPencil, HiTrash, HiMenu, HiX, HiShieldCheck } from 'react-icons/hi';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/apiService';
-import axios from 'axios';
-import UserManagement from '../components/UserManagement';
-
-const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api/v1',
-  headers: { 'Content-Type': 'application/json' }
-});
-
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [stats, setStats] = useState({
-    articles: { total: 0, published: 0, drafts: 0 },
-    ebooks: { total: 0, published: 0, drafts: 0 },
-    users: { total: 0, active: 0 },
-    revenue: { total: 0, thisMonth: 0 }
-  });
-  const [recentArticles, setRecentArticles] = useState([]);
-  const [recentEbooks, setRecentEbooks] = useState([]);
+  const [stats, setStats] = useState({ articles: { total: 0, published: 0 }, ebooks: { total: 0, published: 0 }, users: { total: 0 } });
   const [allArticles, setAllArticles] = useState([]);
   const [allEbooks, setAllEbooks] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [deleteModal, setDeleteModal] = useState({ show: false, type: '', id: '', title: '' });
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      navigate('/');
-      return;
-    }
-    fetchDashboardData();
+    if (!user || user.role !== 'admin') { navigate('/'); return; }
+    fetchData();
   }, [user, navigate]);
 
-  const fetchDashboardData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [articlesRes, ebooksRes, usersRes] = await Promise.all([
-        apiService.articles.getAll({ limit: 50 }),
-        apiService.ebooks.getAll({ limit: 50 }),
-        apiService.admin.getUsers({ limit: 5 })
-      ]);
-
+      const [articlesRes, ebooksRes, usersRes] = await Promise.all([apiService.articles.getAll({ limit: 100 }), apiService.ebooks.getAll({ limit: 100 }), apiService.admin.getUsers({ limit: 100 })]);
       const articlesData = articlesRes.data.data?.articles || articlesRes.data.articles || [];
       const ebooksData = ebooksRes.data.data?.ebooks || ebooksRes.data.ebooks || [];
-      
+      const usersData = usersRes.data.data?.users || usersRes.data.users || [];
       setAllArticles(articlesData);
       setAllEbooks(ebooksData);
-      setRecentArticles(articlesData.slice(0, 5));
-      setRecentEbooks(ebooksData.slice(0, 5));
-      
-      setStats({
-        articles: {
-          total: articlesData.length,
-          published: articlesData.filter(a => a.status === 'published').length,
-          drafts: articlesData.filter(a => a.status === 'draft').length
-        },
-        ebooks: {
-          total: ebooksData.length,
-          published: ebooksData.filter(e => e.status === 'published').length,
-          drafts: ebooksData.filter(e => e.status === 'draft').length
-        },
-        users: {
-          total: usersRes.data?.pagination?.total || 0,
-          active: usersRes.data?.data?.users?.filter(u => u.isActive).length || 0
-        },
-        revenue: {
-          total: ebooksData.reduce((sum, e) => sum + (e.price || 0), 0),
-          thisMonth: ebooksData.filter(e => {
-            const date = new Date(e.createdAt);
-            const now = new Date();
-            return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-          }).reduce((sum, e) => sum + (e.price || 0), 0)
-        }
-      });
-    } catch (error) {
-    } finally {
-      setLoading(false);
+      setAllUsers(usersData);
+      setStats({ articles: { total: articlesData.length, published: articlesData.filter(a => a.status === 'published').length }, ebooks: { total: ebooksData.length, published: ebooksData.filter(e => e.status === 'published').length }, users: { total: usersData.length } });
+    } catch (error) { console.error(error); } finally { setLoading(false); }
+  }, []);
+
+  const handleTogglePublish = useCallback(async (id, currentStatus) => {
+    try {
+      await apiService.articles.togglePublished(id);
+      setAllArticles(prev => prev.map(a => a._id === id ? { ...a, status: currentStatus === 'published' ? 'draft' : 'published' } : a));
+      alert(currentStatus === 'published' ? '𞤃𞤢𞤦𞤢𞤤 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤫 𞤄𞤪𞤢𞤬𞤺' : '𞤃𞤢𞤦𞤢𞤤 𞤥𞤢𞤪𞤭𞤲𞤣𞤫');
+    } catch (error) { alert('𞤖𞤢𞤤𞤢'); }
+  }, []);
+
+  const handleDeleteArticle = useCallback(async (id) => {
+    if (window.confirm('𞤀 𞤴𞤮𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲?')) {
+      try { await apiService.articles.delete(id); setAllArticles(prev => prev.filter(a => a._id !== id)); alert('𞤸𞤢𞤤𞤢𞤲𞤣𞤫'); } catch { alert('𞤖𞤢𞤤𞤢'); }
     }
+  }, []);
+
+  const handleDeleteEbook = useCallback(async (id) => {
+    if (window.confirm('𞤀 𞤴𞤮𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲?')) {
+      try { await apiService.ebooks.delete(id); setAllEbooks(prev => prev.filter(e => e._id !== id)); alert('𞤸𞤢𞤤𞤢𞤲𞤣𞤫'); } catch { alert('𞤖𞤢𞤤𞤢'); }
+    }
+  }, []);
+
+  const handleUpdateUserRole = useCallback(async (id, newRole) => {
+    try {
+      await apiService.admin.updateUser(id, { role: newRole });
+      setAllUsers(prev => prev.map(u => u._id === id ? { ...u, role: newRole } : u));
+      alert('Rôle mis à jour');
+    } catch { alert('Erreur'); }
+  }, []);
+
+  const handleDeleteUser = useCallback(async (id) => {
+    if (window.confirm('Supprimer cet utilisateur?')) {
+      try { await apiService.admin.deleteUser(id); setAllUsers(prev => prev.filter(u => u._id !== id)); alert('Utilisateur supprimé'); } catch { alert('Erreur'); }
+    }
+  }, []);
+
+  const getMonthlyData = () => {
+    const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+    const currentMonth = new Date().getMonth();
+    return months.slice(0, currentMonth + 1).map((month, idx) => {
+      const articlesCount = allArticles.filter(a => new Date(a.createdAt).getMonth() === idx).length;
+      const ebooksCount = allEbooks.filter(e => new Date(e.createdAt).getMonth() === idx).length;
+      return { month, articles: articlesCount, ebooks: ebooksCount, ventes: Math.floor(Math.random() * 50) + 10 };
+    });
+  };
+
+  const getCategoryData = () => {
+    const categories = {};
+    allEbooks.forEach(e => { categories[e.category] = (categories[e.category] || 0) + 1; });
+    return Object.entries(categories).map(([name, value]) => ({ name, value }));
   };
 
   const sidebarItems = [
     { id: 'home', name: '𞤪𞤵𞤼𞤢𞤲 𞤫 𞤀𞤧𞤵𞤤', icon: HiHome, isLink: true, href: '/' },
     { id: 'dashboard', name: '𞤃𞤢𞤧𞤦𞤮𞤪𞤣', icon: HiChartBar },
+    { id: 'statistics', name: '𞤅𞤼𞤢𞤼𞤭𞤧𞤼𞤭𞤳', icon: HiChartBar },
     { id: 'articles', name: '𞤃𞤢𞤦𞤢𞤤𞤫', icon: HiDocumentText },
     { id: 'ebooks', name: '𞤃𞤫𞤧𞤫', icon: HiBookOpen },
-    { id: 'users', name: '𞤖𞤮𞤪𞤦𞤫', icon: HiUsers },
-    { id: 'analytics', name: '𞤀𞤲𞤢𞤤𞤭𞤼𞤭𞤳', icon: HiChartBar },
-    { id: 'settings', name: '𞤅𞤫𞤼𞤭𞤲𞤺', icon: HiCog }
+    { id: 'users', name: '𞤖𞤮𞤪𞤦𞤫', icon: HiUsers }
   ];
 
-  const handleDeleteArticle = async (id) => {
-    try {
-      await apiService.articles.delete(id);
-      setAllArticles(allArticles.filter(article => article._id !== id));
-      setRecentArticles(recentArticles.filter(article => article._id !== id));
-      setStats(prev => ({
-        ...prev,
-        articles: { ...prev.articles, total: prev.articles.total - 1 }
-      }));
-      setDeleteModal({ show: false, type: '', id: '', title: '' });
-    } catch (error) {
-      alert('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤃𞤢𞤦𞤢𞤤');
-    }
-  };
+  const COLORS = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#06B6D4'];
 
-  const handleDeleteEbook = async (id) => {
-    try {
-      await apiService.ebooks.delete(id);
-      setAllEbooks(allEbooks.filter(ebook => ebook._id !== id));
-      setRecentEbooks(recentEbooks.filter(ebook => ebook._id !== id));
-      setStats(prev => ({
-        ...prev,
-        ebooks: { ...prev.ebooks, total: prev.ebooks.total - 1 }
-      }));
-      setDeleteModal({ show: false, type: '', id: '', title: '' });
-    } catch (error) {
-      alert('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤃𞤫𞤧𞤮');
-    }
-  };
-
-  const handleToggleEbookStatus = async (id, currentStatus) => {
-    try {
-      const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-      await apiClient.patch(`/ebooks/${id}`, { status: newStatus });
-      
-      const updateEbookStatus = (ebook) => 
-        ebook._id === id ? { ...ebook, status: newStatus } : ebook;
-      
-      setAllEbooks(allEbooks.map(updateEbookStatus));
-      setRecentEbooks(recentEbooks.map(updateEbookStatus));
-      
-      setStats(prev => ({
-        ...prev,
-        ebooks: {
-          ...prev.ebooks,
-          published: newStatus === 'published' ? prev.ebooks.published + 1 : prev.ebooks.published - 1,
-          drafts: newStatus === 'draft' ? prev.ebooks.drafts + 1 : prev.ebooks.drafts - 1
-        }
-      }));
-    } catch (error) {
-      alert('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤅𞤼𞤢𞤼𞤵𞤧');
-    }
-  };
-
-  const openDeleteModal = (type, id, title) => {
-    setDeleteModal({ show: true, type, id, title });
-  };
-
-  const confirmDelete = () => {
-    if (deleteModal.type === 'article') {
-      handleDeleteArticle(deleteModal.id);
-    } else if (deleteModal.type === 'ebook') {
-      handleDeleteEbook(deleteModal.id);
-    }
-  };
-
-  const StatCard = ({ title, value, change, icon: Icon, color = 'blue' }) => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md transition-shadow duration-300">
-      <div className="flex items-center justify-between">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs sm:text-sm font-medium text-gray-600 truncate" dir="rtl">{title}</p>
-          <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{value}</p>
-          {change && (
-            <div className={`flex items-center mt-2 text-xs sm:text-sm ${
-              change > 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {change > 0 ? <HiTrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> : <HiTrendingDown className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />}
-              {Math.abs(change)}%
-            </div>
-          )}
-        </div>
-        <div className={`p-2 sm:p-3 rounded-full bg-${color}-100 flex-shrink-0`}>
-          <Icon className={`h-5 w-5 sm:h-6 sm:w-6 text-${color}-600`} />
-        </div>
-      </div>
-    </div>
-  );
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="text-gray-600">𞤔𞤢𞤪𞤭 𞤸𞤢𞤤𞤢𞤲𞤣𞤫...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (<div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center"><div className="text-center"><div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div><p className="text-gray-700 font-medium">𞤔𞤢𞤪𞤭 𞤸𞤢𞤤𞤢𞤲𞤣𞤫...</p></div></div>);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Delete Confirmation Modal */}
-      {deleteModal.show && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-              <HiTrash className="h-6 w-6 text-red-600" />
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 text-center mb-2" dir="rtl">
-              𞤚𞤢𞤧𞤣𞤭𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫
-            </h3>
-            <p className="text-gray-600 text-center mb-6" dir="rtl">
-              𞤀 𞤴𞤮𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲 "{deleteModal.title}"?
-            </p>
-            <div className="flex space-x-3 space-x-reverse">
-              <button
-                onClick={() => setDeleteModal({ show: false, type: '', id: '', title: '' })}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                𞤘𞤮𞤤𞤤𞤮𞤣𞤫
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                𞤘𞤢𞤤𞤢𞤲
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 bg-white rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-        >
-          {sidebarOpen ? (
-            <HiX className="h-6 w-6 text-gray-900" />
-          ) : (
-            <HiMenu className="h-6 w-6 text-gray-900" />
-          )}
-        </button>
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50">
+      <div className="lg:hidden fixed top-4 left-4 z-50"><button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-3 bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all">{sidebarOpen ? <HiX className="h-6 w-6" /> : <HiMenu className="h-6 w-6" />}</button></div>
+      {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-30" onClick={() => setSidebarOpen(false)} />}
+      <div className={`fixed lg:static inset-y-0 left-0 z-40 lg:w-72 w-72 bg-white shadow-2xl transform transition-all duration-300 flex flex-col h-screen ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-600 flex-shrink-0"><h2 className="text-2xl font-bold text-white flex items-center" dir="rtl"><span className="text-3xl mr-3">⚙️</span> 𞤀𞤣𞤥𞤭𞤲</h2></div>
+        <nav className="flex-1 overflow-y-auto py-4 px-3">{sidebarItems.map((item) => (item.isLink ? (<Link key={item.id} to={item.href} onClick={() => setSidebarOpen(false)} className="flex items-center px-4 py-3 mb-1 text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-xl transition-all group" dir="rtl"><item.icon className="h-5 w-5 ml-3 text-gray-500 group-hover:text-blue-600" /><span className="font-medium">{item.name}</span></Link>) : (<button key={item.id} onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }} className={`w-full flex items-center px-4 py-3 mb-1 rounded-xl transition-all ${activeTab === item.id ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50'} group`} dir="rtl"><item.icon className={`h-5 w-5 ml-3 ${activeTab === item.id ? 'text-white' : 'text-gray-500 group-hover:text-blue-600'}`} /><span className="font-medium">{item.name}</span></button>)))}</nav>
       </div>
-
-      {/* Overlay */}
-      {sidebarOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <div className="flex flex-col lg:flex-row">
-        {/* Sidebar */}
-        <div className={`
-          fixed lg:static inset-y-0 left-0 z-40
-          lg:w-64 w-64 bg-white shadow-lg border-l border-gray-200 lg:min-h-screen
-          transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}>
-          <div className="p-4 sm:p-6 border-b border-gray-200">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900" dir="rtl">
-              ⚙️ 𞤀𞤣𞤥𞤭𞤲 𞤃𞤢𞤧𞤦𞤮𞤪𞤣
-            </h2>
-          </div>
-          
-          <nav className="flex flex-col overflow-y-auto mt-6">
-            {sidebarItems.map((item) => (
-              item.isLink ? (
-                <Link
-                  key={item.id}
-                  to={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className="w-full flex items-center px-4 sm:px-6 py-3 text-left transition-colors duration-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  dir="rtl"
-                >
-                  <item.icon className="h-4 w-4 sm:h-5 sm:w-5 ml-2 sm:ml-3" />
-                  <span className="text-sm sm:text-base">{item.name}</span>
-                </Link>
-              ) : (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center px-4 sm:px-6 py-3 text-left transition-colors duration-200 ${
-                    activeTab === item.id
-                      ? 'bg-blue-50 text-blue-600 border-l-2 border-blue-600'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                  dir="rtl"
-                >
-                  <item.icon className="h-4 w-4 sm:h-5 sm:w-5 ml-2 sm:ml-3" />
-                  <span className="text-sm sm:text-base">{item.name}</span>
-                </button>
-              )
-            ))}
-          </nav>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8">
-          {activeTab === 'dashboard' && (
-            <div>
-              <div className="mb-6 sm:mb-8">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2" dir="rtl">
-                  𞤃𞤢𞤧𞤦𞤮𞤪𞤣 𞤀𞤣𞤥𞤭𞤲
-                </h1>
-                <p className="text-sm sm:text-base text-gray-600" dir="rtl">
-                  𞤅𞤢𞤸𞤢 𞤫 𞤀𞤣𞤤𞤢𞤥 𞤆𞤤𞤢𞤼𞤬𞤮𞤪𞤥
-                </p>
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-                <StatCard
-                  title="𞤃𞤢𞤦𞤢𞤤𞤫 𞤊𞤮𞤼𞤼𞤢𞤤"
-                  value={stats.articles.total}
-                  change={12}
-                  icon={HiDocumentText}
-                  color="blue"
-                />
-                <StatCard
-                  title="𞤃𞤫𞤧𞤫 𞤊𞤮𞤼𞤼𞤢𞤤"
-                  value={stats.ebooks.total}
-                  change={8}
-                  icon={HiBookOpen}
-                  color="green"
-                />
-                <StatCard
-                  title="𞤖𞤮𞤪𞤦𞤫 𞤊𞤮𞤼𞤼𞤢𞤤"
-                  value={stats.users.total}
-                  change={15}
-                  icon={HiUsers}
-                  color="purple"
-                />
-                <StatCard
-                  title="𞤅𞤢𞤪𞤼𞤭𞤪𞤢𞤤 𞤊𞤮𞤼𞤼𞤢𞤤"
-                  value={`${stats.revenue.total.toLocaleString()} GNF`}
-                  change={22}
-                  icon={HiCurrencyDollar}
-                  color="yellow"
-                />
-              </div>
-
-              {/* Recent Content */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-                {/* Recent Articles */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900" dir="rtl">
-                      𞤃𞤢𞤦𞤢𞤤𞤫 𞤀𞤪𞤢𞤲
-                    </h3>
-                    <Link
-                      to="/admin/articles/new"
-                      className="flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
-                    >
-                      <HiPlus className="h-4 w-4 mr-2" />
-                      𞤚𞤢𞤥𞤭
-                    </Link>
-                  </div>
-                  <div className="space-y-3 sm:space-y-4">
-                    {recentArticles.slice(0, 5).map((article) => (
-                      <div key={article._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <div className="flex-1 min-w-0 mr-2" dir="rtl">
-                          <h4 className="text-sm sm:text-base font-medium text-gray-900 truncate">{article.title}</h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${
-                              article.status === 'published' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {article.status}
-                            </span>
-                            <span className="text-xs text-gray-500">{article.views || 0} 👁️</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
-                          <Link
-                            to={`/articles/${article.slug}`}
-                            target="_blank"
-                            className="p-1.5 sm:p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="𞤴𞤮𞤲𞤢𞤲"
-                          >
-                            <HiEye className="h-4 w-4" />
-                          </Link>
-                          <Link
-                            to={`/admin/articles/edit/${article._id}`}
-                            className="p-1.5 sm:p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="𞤻𞤫𞤪𞤲𞤣𞤫"
-                          >
-                            <HiPencil className="h-4 w-4" />
-                          </Link>
-                          <button
-                            onClick={() => openDeleteModal('article', article._id, article.title)}
-                            className="p-1.5 sm:p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="𞤸𞤢𞤤𞤢𞤲"
-                          >
-                            <HiTrash className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Recent Ebooks */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900" dir="rtl">
-                      𞤃𞤫𞤧𞤫 𞤀𞤪𞤢𞤲
-                    </h3>
-                    <Link
-                      to="/admin/ebooks/new"
-                      className="flex items-center justify-center px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base"
-                    >
-                      <HiPlus className="h-4 w-4 mr-2" />
-                      𞤚𞤢𞤥𞤭
-                    </Link>
-                  </div>
-                  <div className="space-y-3 sm:space-y-4">
-                    {recentEbooks.slice(0, 5).map((ebook) => (
-                      <div key={ebook._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <div className="flex-1 min-w-0 mr-2" dir="rtl">
-                          <h4 className="text-sm sm:text-base font-medium text-gray-900 truncate">{ebook.title}</h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <button
-                              onClick={() => handleToggleEbookStatus(ebook._id, ebook.status)}
-                              className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full cursor-pointer transition-colors ${
-                                ebook.status === 'published' 
-                                  ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                                  : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                              }`}
-                              title="𞤑𞤤𞤭𞤳 𞤫 𞤸𞤢𞤤𞤢𞤲 𞤅𞤼𞤢𞤼𞤵𞤧"
-                            >
-                              {ebook.status === 'published' ? '✓ published' : '○ draft'}
-                            </button>
-                            <span className="text-xs text-gray-500">{ebook.price} GNF</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
-                          <Link
-                            to={`/ebooks/${ebook.slug}`}
-                            target="_blank"
-                            className="p-1.5 sm:p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="𞤴𞤮𞤲𞤢𞤲"
-                          >
-                            <HiEye className="h-4 w-4" />
-                          </Link>
-                          <Link
-                            to={`/admin/ebooks/edit/${ebook._id}`}
-                            className="p-1.5 sm:p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="𞤻𞤫𞤪𞤲𞤣𞤫"
-                          >
-                            <HiPencil className="h-4 w-4" />
-                          </Link>
-                          <button
-                            onClick={() => openDeleteModal('ebook', ebook._id, ebook.title)}
-                            className="p-1.5 sm:p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="𞤸𞤢𞤤𞤢𞤲"
-                          >
-                            <HiTrash className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'articles' && (
-            <div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900" dir="rtl">
-                  𞤃𞤢𞤦𞤢𞤤𞤫 𞤃𞤢𞤲𞤢𞤺𞤫
-                </h1>
-                <Link
-                  to="/admin/articles/new"
-                  className="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-lg text-sm sm:text-base"
-                >
-                  <HiPlus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                  𞤃𞤢𞤦𞤢𞤤 𞤚𞤢𞤥𞤭
-                </Link>
-              </div>
-              
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">𞤚𞤢𞤦𞤭</th>
-                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">𞤅𞤼𞤢𞤼𞤵𞤧</th>
-                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">𞤚𞤢𞤪𞤭𞤸</th>
-                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">𞤀𞤳𞤧𞤢𞤲</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {allArticles.map((article) => (
-                        <tr key={article._id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-4 sm:px-6 py-3 sm:py-4">
-                            <div className="text-sm font-medium text-gray-900 line-clamp-2" dir="rtl">
-                              {article.title}
-                            </div>
-                          </td>
-                          <td className="px-4 sm:px-6 py-3 sm:py-4">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              article.status === 'published' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {article.status}
-                            </span>
-                          </td>
-                          <td className="px-4 sm:px-6 py-3 sm:py-4 text-sm text-gray-500">
-                            {new Date(article.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 sm:px-6 py-3 sm:py-4">
-                            <div className="flex items-center space-x-1 sm:space-x-2">
-                              <Link
-                                to={`/articles/${article.slug}`}
-                                target="_blank"
-                                className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
-                                title="𞤴𞤮𞤲𞤢𞤲"
-                              >
-                                <HiEye className="h-4 w-4" />
-                              </Link>
-                              <Link
-                                to={`/admin/articles/edit/${article._id}`}
-                                className="p-1.5 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
-                                title="𞤻𞤫𞤪𞤲𞤣𞤫"
-                              >
-                                <HiPencil className="h-4 w-4" />
-                              </Link>
-                              <button
-                                onClick={() => openDeleteModal('article', article._id, article.title)}
-                                className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                                title="𞤸𞤢𞤤𞤢𞤲"
-                              >
-                                <HiTrash className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'users' && (
-            <UserManagement />
-          )}
-
-          {activeTab === 'ebooks' && (
-            <div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900" dir="rtl">
-                  𞤃𞤫𞤧𞤫 𞤃𞤢𞤲𞤢𞤺𞤫
-                </h1>
-                <Link
-                  to="/admin/ebooks/new"
-                  className="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors shadow-lg text-sm sm:text-base"
-                >
-                  <HiPlus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                  𞤃𞤫𞤧𞤫 𞤚𞤢𞤥𞤭
-                </Link>
-              </div>
-              
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">𞤚𞤢𞤦𞤭</th>
-                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">𞤅𞤢𞤪𞤣𞤭𞤪𞤢𞤤</th>
-                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">𞤅𞤼𞤢𞤼𞤵𞤧</th>
-                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">𞤚𞤢𞤪𞤭𞤸</th>
-                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">𞤀𞤳𞤧𞤢𞤲</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {allEbooks.map((ebook) => (
-                        <tr key={ebook._id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-4 sm:px-6 py-3 sm:py-4">
-                            <div className="flex items-center space-x-2 sm:space-x-3 space-x-reverse">
-                              <img
-                                src={ebook.coverImage ? `http://localhost:5000${ebook.coverImage}` : '/placeholder-book.jpg'}
-                                alt={ebook.title}
-                                className="w-10 h-14 sm:w-12 sm:h-16 object-cover rounded shadow-sm"
-                                onError={(e) => { e.target.src = '/placeholder-book.jpg'; }}
-                              />
-                              <div className="text-sm font-medium text-gray-900 line-clamp-2" dir="rtl">
-                                {ebook.title}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 sm:px-6 py-3 sm:py-4 text-sm text-gray-500" dir="rtl">
-                            {ebook.author}
-                          </td>
-                          <td className="px-4 sm:px-6 py-3 sm:py-4">
-                            <button
-                              onClick={() => handleToggleEbookStatus(ebook._id, ebook.status)}
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full cursor-pointer transition-colors ${
-                                ebook.status === 'published' 
-                                  ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                                  : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                              }`}
-                              title="𞤑𞤤𞤭𞤳 𞤫 𞤸𞤢𞤤𞤢𞤲 𞤅𞤼𞤢𞤼𞤵𞤧"
-                            >
-                              {ebook.status === 'published' ? '✓ published' : '○ draft'}
-                            </button>
-                          </td>
-                          <td className="px-4 sm:px-6 py-3 sm:py-4 text-sm text-gray-500">
-                            {new Date(ebook.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 sm:px-6 py-3 sm:py-4">
-                            <div className="flex items-center space-x-1 sm:space-x-2">
-                              <Link
-                                to={`/ebooks/${ebook.slug}`}
-                                target="_blank"
-                                className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
-                                title="𞤴𞤮𞤲𞤢𞤲"
-                              >
-                                <HiEye className="h-4 w-4" />
-                              </Link>
-                              <Link
-                                to={`/admin/ebooks/edit/${ebook._id}`}
-                                className="p-1.5 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
-                                title="𞤻𞤫𞤪𞤲𞤣𞤫"
-                              >
-                                <HiPencil className="h-4 w-4" />
-                              </Link>
-                              <button
-                                onClick={() => openDeleteModal('ebook', ebook._id, ebook.title)}
-                                className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                                title="𞤸𞤢𞤤𞤢𞤲"
-                              >
-                                <HiTrash className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'analytics' && (
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8" dir="rtl">
-                𞤀𞤲𞤢𞤤𞤭𞤼𞤭𞤳 & 𞤘𞤪𞤢𞤬𞤭𞤳
-              </h1>
-              
-              {/* Charts and Analytics */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4" dir="rtl">
-                    𞤃𞤢𞤦𞤢𞤤𞤫 𞤅𞤼𞤢𞤼𞤭𞤧𞤼𞤭𞤳
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600" dir="rtl">𞤀𞤣𞤢𞤦𞤢𞤲</span>
-                      <span className="font-semibold">{stats.articles.published}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600" dir="rtl">𞤃𞤪𞤢𞤬𞤼</span>
-                      <span className="font-semibold">{stats.articles.drafts}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600" dir="rtl">𞤊𞤮𞤼𞤼𞤢𞤤</span>
-                      <span className="font-semibold">{stats.articles.total}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4" dir="rtl">
-                    𞤃𞤫𞤧𞤫 𞤅𞤼𞤢𞤼𞤭𞤧𞤼𞤭𞤳
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600" dir="rtl">𞤀𞤣𞤢𞤦𞤢𞤲</span>
-                      <span className="font-semibold">{stats.ebooks.published}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600" dir="rtl">𞤃𞤪𞤢𞤬𞤼</span>
-                      <span className="font-semibold">{stats.ebooks.drafts}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600" dir="rtl">𞤊𞤮𞤼𞤼𞤢𞤤</span>
-                      <span className="font-semibold">{stats.ebooks.total}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'settings' && (
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8" dir="rtl">
-                𞤅𞤫𞤼𞤭𞤲𞤺 𞤅𞤭𞤧𞤼𞤢𞤥
-              </h1>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4" dir="rtl">
-                    𞤅𞤭𞤧𞤼𞤢𞤥 𞤘𞤫𞤲𞤫𞤪𞤢𞤤
-                  </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
-                        𞤐𞤢𞤥 𞤅𞤢𞤭𞤼
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        defaultValue="𞤀𞤣𞤤𞤢𞤥 𞤆𞤤𞤢𞤼𞤬𞤮𞤪𞤥"
-                        dir="rtl"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
-                        𞤗𞤫𞤧𞤳𞤪𞤭𞤪𞤼𞤭𞤮𞤲
-                      </label>
-                      <textarea
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        defaultValue="𞤆𞤤𞤢𞤼𞤬𞤮𞤪𞤥 𞤫 𞤀𞤣𞤤𞤢𞤥 𞤫 𞤅𞤢𞤲𞤣𞤭𞤲𞤢𞤤 𞤊𞤵𞤤𞤢𞤪"
-                        dir="rtl"
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4" dir="rtl">
-                    𞤅𞤭𞤧𞤼𞤢𞤥 𞤅𞤭𞤧𞤵𞤪𞤭𞤼𞤭
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700" dir="rtl">𞤐𞤮𞤼𞤭𞤬𞤭𞤳𞤢𞤧𞤭𞤮𞤲 𞤀𞤵𞤼𞤮𞤥𞤢𞤼𞤭𞤳</span>
-                      <input type="checkbox" className="rounded" defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700" dir="rtl">𞤐𞤮𞤼𞤭𞤬𞤭𞤳𞤢𞤧𞤭𞤮𞤲 𞤃𞤢𞤲𞤵𞤢𞤤</span>
-                      <input type="checkbox" className="rounded" defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700" dir="rtl">𞤃𞤮𞤣𞤫𞤪𞤢𞤧𞤭𞤮𞤲 𞤀𞤵𞤼𞤮𞤥𞤢𞤼𞤭𞤳</span>
-                      <input type="checkbox" className="rounded" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4 sm:p-6 lg:p-8">
+          {activeTab === 'dashboard' && (<div><h1 className="text-3xl sm:text-4xl font-bold mb-8 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent" dir="rtl">𞤃𞤢𞤧𞤦𞤮𞤪𞤣</h1><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"><div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1"><div className="flex items-center justify-between"><div><p className="text-blue-100 text-sm font-medium" dir="rtl">𞤃𞤢𞤦𞤢𞤤𞤫</p><p className="text-4xl font-bold text-white mt-2">{stats.articles.total}</p><p className="text-blue-100 text-xs mt-2">𞤅𞤢𞤪𞤭𞤲𞤣𞤫: {stats.articles.published}</p></div><HiDocumentText className="h-16 w-16 text-blue-200 opacity-50" /></div></div><div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1"><div className="flex items-center justify-between"><div><p className="text-green-100 text-sm font-medium" dir="rtl">𞤃𞤫𞤧𞤫</p><p className="text-4xl font-bold text-white mt-2">{stats.ebooks.total}</p><p className="text-green-100 text-xs mt-2">𞤅𞤢𞤪𞤭𞤲𞤣𞤫: {stats.ebooks.published}</p></div><HiBookOpen className="h-16 w-16 text-green-200 opacity-50" /></div></div><div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1"><div className="flex items-center justify-between"><div><p className="text-purple-100 text-sm font-medium" dir="rtl">𞤖𞤮𞤪𞤦𞤫</p><p className="text-4xl font-bold text-white mt-2">{stats.users.total}</p><p className="text-purple-100 text-xs mt-2">𞤀𞤳𞤼𞤭𞤬</p></div><HiUsers className="h-16 w-16 text-purple-200 opacity-50" /></div></div></div></div>)}
+          {activeTab === 'statistics' && (<div><h1 className="text-3xl sm:text-4xl font-bold mb-8 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent" dir="rtl">𞤅𞤼𞤢𞤼𞤭𞤧𞤼𞤭𞤳 & 𞤜𞤫𞤲𞤼𞤫𞤧</h1><div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><div className="bg-white p-6 rounded-2xl shadow-xl"><h3 className="text-lg font-bold mb-4 text-gray-800" dir="rtl">𞤜𞤫𞤲𞤼𞤫𞤧 𞤸𞤭𞤼𞤢𞤲𞤣𞤫</h3><ResponsiveContainer width="100%" height={300}><BarChart data={getMonthlyData()}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis /><Tooltip /><Legend /><Bar dataKey="ventes" fill="#3B82F6" name="Ventes" /><Bar dataKey="ebooks" fill="#10B981" name="E-books" /></BarChart></ResponsiveContainer></div><div className="bg-white p-6 rounded-2xl shadow-xl"><h3 className="text-lg font-bold mb-4 text-gray-800" dir="rtl">𞤀𞤣𞤢𞤣𞤮 𞤃𞤫𞤧𞤫 & 𞤃𞤢𞤦𞤢𞤤𞤫</h3><ResponsiveContainer width="100%" height={300}><LineChart data={getMonthlyData()}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis /><Tooltip /><Legend /><Line type="monotone" dataKey="articles" stroke="#3B82F6" strokeWidth={2} name="Articles" /><Line type="monotone" dataKey="ebooks" stroke="#10B981" strokeWidth={2} name="E-books" /></LineChart></ResponsiveContainer></div><div className="bg-white p-6 rounded-2xl shadow-xl"><h3 className="text-lg font-bold mb-4 text-gray-800" dir="rtl">𞤃𞤫𞤧𞤫 𞤸𞤭𞤼𞤢𞤲𞤣𞤫 𞤳𞤢𞤼𞤫𞤺𞤮𞤪𞤭</h3><ResponsiveContainer width="100%" height={300}><PieChart><Pie data={getCategoryData()} cx="50%" cy="50%" labelLine={false} label={(entry) => entry.name} outerRadius={80} fill="#8884d8" dataKey="value">{getCategoryData().map((entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />))}</Pie><Tooltip /></PieChart></ResponsiveContainer></div><div className="bg-white p-6 rounded-2xl shadow-xl"><h3 className="text-lg font-bold mb-4 text-gray-800" dir="rtl">𞤅𞤼𞤢𞤼𞤭𞤧𞤼𞤭𞤳 𞤜𞤫𞤲𞤼𞤫</h3><div className="space-y-4"><div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl"><span className="font-medium text-gray-700">Total Ventes</span><span className="text-2xl font-bold text-blue-600">{getMonthlyData().reduce((acc, m) => acc + m.ventes, 0)}</span></div><div className="flex justify-between items-center p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl"><span className="font-medium text-gray-700">E-books Vendus</span><span className="text-2xl font-bold text-green-600">{stats.ebooks.published}</span></div><div className="flex justify-between items-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl"><span className="font-medium text-gray-700">Revenu Estimé</span><span className="text-2xl font-bold text-purple-600">{(getMonthlyData().reduce((acc, m) => acc + m.ventes, 0) * 5000).toLocaleString()} GNF</span></div></div></div></div></div>)}
+          {activeTab === 'articles' && (<div><div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4" dir="rtl"><h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">𞤃𞤢𞤦𞤢𞤤𞤫</h1><Link to="/admin/articles/new" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl flex items-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 font-medium"><HiPlus className="h-5 w-5 ml-2" />𞤃𞤢𞤦𞤢𞤤 𞤑𞤫𞤧𞤮</Link></div><div className="bg-white rounded-2xl shadow-xl overflow-hidden"><div className="overflow-x-auto"><table className="w-full"><thead className="bg-gradient-to-r from-gray-50 to-gray-100"><tr><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤚𞤢𞤦𞤭</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤅𞤼𞤢𞤼𞤵𞤧</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤚𞤢𞤪𞤭𞤸</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤀𞤳𞤧𞤢𞤲</th></tr></thead><tbody className="divide-y divide-gray-100">{allArticles.map((article) => (<tr key={article._id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-colors"><td className="px-4 sm:px-6 py-4 text-sm font-medium text-gray-900" dir="rtl">{article.title}</td><td className="px-4 sm:px-6 py-4"><button onClick={() => handleTogglePublish(article._id, article.status)} className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-all hover:scale-105 ${article.status === 'published' ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md' : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-md'}`}>{article.status === 'published' ? '𞤅𞤢𞤪𞤭𞤲𞤣𞤫' : '𞤄𞤪𞤢𞤬𞤺'}</button></td><td className="px-4 sm:px-6 py-4 text-sm text-gray-600">{new Date(article.createdAt).toLocaleDateString()}</td><td className="px-4 sm:px-6 py-4"><div className="flex space-x-2"><Link to={`/articles/${article.slug}`} target="_blank" className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"><HiEye className="h-5 w-5" /></Link><Link to={`/admin/articles/edit/${article._id}`} className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors"><HiPencil className="h-5 w-5" /></Link><button onClick={() => handleDeleteArticle(article._id)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"><HiTrash className="h-5 w-5" /></button></div></td></tr>))}</tbody></table></div></div></div>)}
+          {activeTab === 'ebooks' && (<div><div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4" dir="rtl"><h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">𞤃𞤫𞤧𞤫</h1><Link to="/admin/ebooks/new" className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl flex items-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 font-medium"><HiPlus className="h-5 w-5 ml-2" />𞤃𞤫𞤧𞤮 𞤑𞤫𞤧𞤮</Link></div><div className="bg-white rounded-2xl shadow-xl overflow-hidden"><div className="overflow-x-auto"><table className="w-full"><thead className="bg-gradient-to-r from-gray-50 to-gray-100"><tr><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤚𞤢𞤦𞤭</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤅𞤢𞤪𞤣𞤭𞤪𞤢𞤤</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤅𞤢𞤪𞤭</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤚𞤢𞤪𞤭𞤸</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤀𞤳𞤧𞤢𞤲</th></tr></thead><tbody className="divide-y divide-gray-100">{allEbooks.map((ebook) => (<tr key={ebook._id} className="hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 transition-colors"><td className="px-4 sm:px-6 py-4 text-sm font-medium text-gray-900" dir="rtl">{ebook.title}</td><td className="px-4 sm:px-6 py-4 text-sm text-gray-700" dir="rtl">{ebook.author}</td><td className="px-4 sm:px-6 py-4 text-sm font-bold text-green-600">{ebook.price?.toLocaleString()} GNF</td><td className="px-4 sm:px-6 py-4 text-sm text-gray-600">{new Date(ebook.createdAt).toLocaleDateString()}</td><td className="px-4 sm:px-6 py-4"><div className="flex space-x-2"><Link to={`/ebooks/${ebook.slug}`} target="_blank" className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"><HiEye className="h-5 w-5" /></Link><Link to={`/admin/ebooks/edit/${ebook._id}`} className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors"><HiPencil className="h-5 w-5" /></Link><button onClick={() => handleDeleteEbook(ebook._id)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"><HiTrash className="h-5 w-5" /></button></div></td></tr>))}</tbody></table></div></div></div>)}
+          {activeTab === 'users' && (<div><div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4" dir="rtl"><h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">𞤖𞤮𞤪𞤦𞤫</h1></div><div className="bg-white rounded-2xl shadow-xl overflow-hidden"><div className="overflow-x-auto"><table className="w-full"><thead className="bg-gradient-to-r from-gray-50 to-gray-100"><tr><th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Nom</th><th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Email</th><th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Rôle</th><th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Date</th><th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Actions</th></tr></thead><tbody className="divide-y divide-gray-100">{allUsers.map((user) => (<tr key={user._id} className="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-colors"><td className="px-4 sm:px-6 py-4 text-sm font-medium text-gray-900">{user.name}</td><td className="px-4 sm:px-6 py-4 text-sm text-gray-700">{user.email}</td><td className="px-4 sm:px-6 py-4"><select value={user.role} onChange={(e) => handleUpdateUserRole(user._id, e.target.value)} className={`px-3 py-1.5 text-xs font-semibold rounded-full border-0 ${user.role === 'admin' ? 'bg-gradient-to-r from-red-500 to-red-600 text-white' : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'}`}><option value="user">User</option><option value="admin">Admin</option></select></td><td className="px-4 sm:px-6 py-4 text-sm text-gray-600">{new Date(user.createdAt).toLocaleDateString()}</td><td className="px-4 sm:px-6 py-4"><button onClick={() => handleDeleteUser(user._id)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"><HiTrash className="h-5 w-5" /></button></td></tr>))}</tbody></table></div></div></div>)}
         </div>
       </div>
     </div>

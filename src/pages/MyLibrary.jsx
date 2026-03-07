@@ -88,7 +88,7 @@ const MyLibrary = () => {
                             𞤀 𞤸𞤢𞤤 𞤧𞤢𞤴𞤢𞤲 𞤃𞤫𞤧𞤮 𞤸𞤢𞤤𞤭. 𞤔𞤮𞤲𞤢𞤲 𞤦𞤵𞤼𞤭𞤳 𞤫𞤲𞤺𞤢𞤥 𞤫 𞤧𞤢𞤴𞤢𞤲 𞤃𞤫𞤧𞤮 𞤢𞤪𞤢𞤲𞤣𞤫.
                         </p>
                         <Link
-                            to="/library"
+                            to="/ebooks"
                             className="inline-block bg-black text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors text-sm sm:text-base"
                         >
                             𞤔𞤮𞤲𞤢𞤲 𞤄𞤵𞤼𞤭𞤳

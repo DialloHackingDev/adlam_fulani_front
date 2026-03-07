@@ -94,7 +94,7 @@ const HeroBanner = () => {
       <div className="absolute inset-0">
         {currentArticle.coverImage ? (
           <img
-            src={currentArticle.coverImage}
+            src={getImageUrl(currentArticle.coverImage)}
             alt={currentArticle.title}
             className="w-full h-full object-cover"
             onError={(e) => {
