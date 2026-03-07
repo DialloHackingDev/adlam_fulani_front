@@ -160,25 +160,49 @@ const EbookEditor = () => {
 
   const handleSave = useCallback(async (status = formData.status) => {
     try {
+      // Validation
+      if (!formData.title.trim()) {
+        alert('𞤖𞤢𞤤𞤢𞤲𞤣𞤫 𞤚𞤢𞤦𞤭 𞤃𞤫𞤧𞤮𞤮𞤳');
+        return;
+      }
+      if (!formData.description.trim()) {
+        alert('𞤖𞤢𞤤𞤢𞤲𞤣𞤫 𞤃𞤵𞤸𞤼𞤢𞤧𞤢𞤪 𞤃𞤫𞤧𞤮𞤮𞤳');
+        return;
+      }
+      
       setSaving(true);
       
       const submitData = new FormData();
-      Object.keys(formData).forEach(key => {
-        if (key === 'tags' || key === 'keywords') {
-          // Ajouter chaque élément du tableau séparément
-          formData[key].forEach(item => {
-            submitData.append(key, item);
-          });
-        } else if (key === 'coverImage' && formData[key]) {
-          submitData.append('coverImage', formData[key]);
-        } else if (key === 'pdfFile' && formData[key]) {
-          submitData.append('pdfFile', formData[key]);
-        } else if (key !== 'coverImage' && key !== 'pdfFile') {
-          submitData.append(key, formData[key]);
-        }
-      });
       
-      submitData.set('status', status);
+      // Champs simples
+      submitData.append('title', formData.title.trim());
+      submitData.append('description', formData.description.trim());
+      submitData.append('author', formData.author.trim());
+      submitData.append('category', formData.category);
+      submitData.append('status', status);
+      submitData.append('featured', formData.featured);
+      submitData.append('price', formData.price);
+      submitData.append('pages', formData.pages);
+      submitData.append('language', formData.language);
+      submitData.append('isbn', formData.isbn.trim());
+      submitData.append('publisher', formData.publisher.trim());
+      submitData.append('publishedDate', formData.publishedDate);
+      
+      // Fichiers
+      if (formData.coverImage) {
+        submitData.append('coverImage', formData.coverImage);
+      }
+      if (formData.pdfFile) {
+        submitData.append('pdfFile', formData.pdfFile);
+      }
+      
+      // Tags et keywords en string séparés par virgules
+      if (formData.tags.length > 0) {
+        submitData.append('tags', formData.tags.join(','));
+      }
+      if (formData.keywords.length > 0) {
+        submitData.append('keywords', formData.keywords.join(','));
+      }
 
       let response;
       if (isEditing) {
@@ -191,7 +215,8 @@ const EbookEditor = () => {
         navigate('/admin');
       }
     } catch (error) {
-      alert('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤅𞤢𞤦𞤢𞤲𞤣𞤫 𞤃𞤫𞤧𞤮𞤮𞤳');
+      console.error('Erreur sauvegarde ebook:', error);
+      alert(error.response?.data?.message || '𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤅𞤢𞤦𞤢𞤲𞤣𞤫 𞤃𞤫𞤧𞤮𞤮𞤳');
     } finally {
       setSaving(false);
     }

@@ -140,23 +140,42 @@ const ArticleEditor = () => {
 
   const handleSave = useCallback(async (status = formData.status) => {
     try {
+      // Validation
+      if (!formData.title.trim()) {
+        alert('𞤖𞤢𞤤𞤢𞤲𞤣𞤫 𞤚𞤢𞤦𞤭 𞤃𞤢𞤦𞤢𞤤');
+        return;
+      }
+      if (!formData.content.trim()) {
+        alert('𞤖𞤢𞤤𞤢𞤲𞤣𞤫 𞤑𞤮𞤲𞤼𞤫𞤲𞤼 𞤃𞤢𞤦𞤢𞤤');
+        return;
+      }
+      
       setSaving(true);
       
       const submitData = new FormData();
-      Object.keys(formData).forEach(key => {
-        if (key === 'tags' || key === 'keywords') {
-          // Ajouter chaque élément du tableau séparément
-          formData[key].forEach(item => {
-            submitData.append(key, item);
-          });
-        } else if (key === 'coverImage' && formData[key]) {
-          submitData.append('coverImage', formData[key]);
-        } else if (key !== 'coverImage') {
-          submitData.append(key, formData[key]);
-        }
-      });
       
-      submitData.set('status', status);
+      // Champs simples
+      submitData.append('title', formData.title.trim());
+      submitData.append('content', formData.content.trim());
+      submitData.append('excerpt', formData.excerpt.trim());
+      submitData.append('category', formData.category);
+      submitData.append('status', status);
+      submitData.append('featured', formData.featured);
+      submitData.append('metaTitle', formData.metaTitle.trim());
+      submitData.append('metaDescription', formData.metaDescription.trim());
+      
+      // Image
+      if (formData.coverImage) {
+        submitData.append('coverImage', formData.coverImage);
+      }
+      
+      // Tags et keywords en string séparés par virgules
+      if (formData.tags.length > 0) {
+        submitData.append('tags', formData.tags.join(','));
+      }
+      if (formData.keywords.length > 0) {
+        submitData.append('keywords', formData.keywords.join(','));
+      }
 
       let response;
       if (isEditing) {
@@ -169,7 +188,8 @@ const ArticleEditor = () => {
         navigate('/admin');
       }
     } catch (error) {
-      alert('𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤅𞤢𞤦𞤢𞤲𞤣𞤫 𞤃𞤢𞤦𞤢𞤤');
+      console.error('Erreur sauvegarde:', error);
+      alert(error.response?.data?.message || '𞤑𞤢𞤤𞤢 𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤅𞤢𞤦𞤢𞤲𞤣𞤫 𞤃𞤢𞤦𞤢𞤤');
     } finally {
       setSaving(false);
     }
