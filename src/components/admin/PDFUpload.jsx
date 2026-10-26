@@ -47,14 +47,14 @@ const PDFUpload = ({ onPDFSelect, currentPDF, label }) => {
   };
 
   return (
-    <div className="space-y-2" dir="rtl">
+    <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-700">
         {label}
       </label>
       
       {selectedFile ? (
         <div className="flex items-center justify-between p-4 border border-gray-300 rounded-lg bg-gray-50">
-          <div className="flex items-center space-x-3 space-x-reverse">
+          <div className="flex items-center space-x-3">
             <HiDocumentText className="h-8 w-8 text-red-600" />
             <div>
               <p className="text-sm font-medium text-gray-900">

@@ -1,5 +1,17 @@
 import { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { apiService } from '../services/apiService';
+import { clearAccountData } from '../utils/offlineStore';
+
+// Dernier profil connu : permet de rester connecté sans réseau
+const USER_KEY = 'user';
+
+const readCachedUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem(USER_KEY));
+  } catch {
+    return null;
+  }
+};
 
 const AuthContext = createContext();
 
@@ -29,10 +41,19 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         const response = await apiService.auth.getProfile();
         // Réponse API : { status, data: { user } }
-        dispatch({ type: 'LOGIN_SUCCESS', payload: response.data.data.user });
+        const user = response.data.data.user;
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        dispatch({ type: 'LOGIN_SUCCESS', payload: user });
       }
     } catch (error) {
-      localStorage.removeItem('token');
+      const cachedUser = readCachedUser();
+      if (!error.response && cachedUser) {
+        // Pas de réseau : la session reste ouverte avec le dernier profil connu
+        dispatch({ type: 'LOGIN_SUCCESS', payload: cachedUser });
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem(USER_KEY);
+      }
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
@@ -42,46 +63,36 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, [checkAuth]);
 
+  // Pas de chargement global pendant la connexion : la page garde son formulaire
+  // affiché et gère son propre état d'envoi. Les erreurs remontent à l'appelant.
   const login = useCallback(async (email, password) => {
-    try {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      
-      const response = await apiService.auth.login({ email, password });
-      
-      const { token, data } = response.data;
-      const user = data.user;
-      
-      // Stocker le token
-      localStorage.setItem('token', token);
-      dispatch({ type: 'LOGIN_SUCCESS', payload: user });
-      
-      return { success: true };
-    } catch (error) {
-      dispatch({ type: 'SET_LOADING', payload: false });
-      throw error;
-    }
+    const response = await apiService.auth.login({ email, password });
+    const { token, data } = response.data;
+
+    localStorage.setItem('token', token);
+    localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+    dispatch({ type: 'LOGIN_SUCCESS', payload: data.user });
+
+    return data.user;
   }, []);
 
   const register = useCallback(async (name, email, password) => {
-    try {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await apiService.auth.register({ name, email, password });
-      const { token, data } = response.data;
-      const user = data.user;
-      
-      localStorage.setItem('token', token);
-      dispatch({ type: 'LOGIN_SUCCESS', payload: user });
-      
-      return { success: true };
-    } catch (error) {
-      dispatch({ type: 'SET_LOADING', payload: false });
-      throw error;
-    }
+    const response = await apiService.auth.register({ name, email, password });
+    const { token, data } = response.data;
+
+    localStorage.setItem('token', token);
+    localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+    dispatch({ type: 'LOGIN_SUCCESS', payload: data.user });
+
+    return data.user;
   }, []);
 
   const logout = useCallback(() => {
     apiService.auth.logout().catch(() => {});
     localStorage.removeItem('token');
+    localStorage.removeItem(USER_KEY);
+    // Livres et données du compte retirés de l'appareil
+    clearAccountData();
     dispatch({ type: 'LOGOUT' });
   }, []);
 

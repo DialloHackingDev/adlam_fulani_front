@@ -99,12 +99,12 @@ const ArticlePreview = ({ title, content, excerpt, category, tags, coverImage })
                 )}
 
                 {/* Title */}
-                <h1 className="text-3xl font-bold text-gray-900 mb-4" dir="rtl">
+                <h1 className="text-3xl font-bold text-gray-900 mb-4">
                   {title || 'عنوان المقال'}
                 </h1>
 
                 {/* Meta Info */}
-                <div className="flex items-center space-x-4 space-x-reverse text-sm text-gray-600 mb-6" dir="rtl">
+                <div className="flex items-center space-x-4 text-sm text-gray-600 mb-6">
                   <div className="flex items-center">
                     <HiEye className="ml-1" />
                     {calculateReadingTime(content || '')} دقائق
@@ -116,7 +116,7 @@ const ArticlePreview = ({ title, content, excerpt, category, tags, coverImage })
 
                 {/* Excerpt */}
                 {excerpt && (
-                  <div className="bg-blue-50 border-r-4 border-blue-600 p-4 mb-6 rounded" dir="rtl">
+                  <div className="bg-blue-50 border-r-4 border-blue-600 p-4 mb-6 rounded">
                     <p className="text-gray-700 italic">
                       {excerpt}
                     </p>
@@ -136,7 +136,7 @@ const ArticlePreview = ({ title, content, excerpt, category, tags, coverImage })
 
                 {/* Tags */}
                 {tags && tags.length > 0 && (
-                  <div className="mt-8 pt-6 border-t border-gray-200" dir="rtl">
+                  <div className="mt-8 pt-6 border-t border-gray-200">
                     <div className="flex flex-wrap gap-2">
                       {tags.map((tag, index) => (
                         <span

@@ -66,7 +66,7 @@ const Header = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2 space-x-reverse">
+            <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
@@ -86,7 +86,7 @@ const Header = () => {
             </nav>
 
             {/* Right side icons */}
-            <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4 space-x-reverse">
+            <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
               {/* Search */}
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -117,12 +117,12 @@ const Header = () => {
                 <div className="relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center space-x-1 sm:space-x-2 space-x-reverse p-2 text-gray-600 hover:text-black hover:bg-gray-50 rounded-full transition-all duration-300 transform hover:scale-105"
+                    className="flex items-center space-x-1 sm:space-x-2 p-2 text-gray-600 hover:text-black hover:bg-gray-50 rounded-full transition-all duration-300 transform hover:scale-105"
                   >
                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-gray-600 to-black rounded-full flex items-center justify-center">
                       <HiUser className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     </div>
-                    <span className="hidden md:block text-sm font-medium max-w-20 truncate" dir="rtl">{user.name}</span>
+                    <span className="hidden md:block text-sm font-medium max-w-20 truncate">{user.name}</span>
                   </button>
                   
                   {isUserMenuOpen && (
@@ -130,21 +130,19 @@ const Header = () => {
                       <div className="fixed inset-0 z-10" onClick={() => setIsUserMenuOpen(false)}></div>
                       <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20 animate-in slide-in-from-top-2 duration-200">
                         <div className="px-4 py-3 border-b border-gray-100">
-                          <p className="text-sm font-medium text-gray-900" dir="rtl">{user.name}</p>
+                          <p className="text-sm font-medium text-gray-900">{user.name}</p>
                           <p className="text-xs text-gray-500 truncate">{user.email}</p>
                         </div>
                         <Link
                           to="/my-library"
                           onClick={() => setIsUserMenuOpen(false)}
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                          dir="rtl"
                         >
                           <span>𞤃𞤫𞤧𞤫 𞤀𞤥</span>
                         </Link>
                         <button
                           onClick={handleLogout}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center space-x-2 space-x-reverse"
-                          dir="rtl"
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center space-x-2"
                         >
                           <HiLogout className="h-4 w-4" />
                           <span>𞤊𞤭𞤼𞤢𞤤</span>
@@ -154,18 +152,16 @@ const Header = () => {
                   )}
                 </div>
               ) : (
-                <div className="hidden sm:flex items-center space-x-2 space-x-reverse">
+                <div className="hidden sm:flex items-center space-x-2">
                   <Link
                     to="/login"
                     className="px-3 lg:px-4 py-2 text-sm font-medium text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg transition-all duration-300"
-                    dir="rtl"
                   >
                     𞤔𞤮𞤲𞤲𞤣𞤭
                   </Link>
                   <Link
                     to="/register"
                     className="px-3 lg:px-4 py-2 text-sm font-medium bg-gradient-to-r from-black to-gray-800 text-white rounded-lg hover:from-gray-800 hover:to-black transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                    dir="rtl"
                   >
                     𞤅𞤮𞤧𞤢𞤲
                   </Link>
@@ -198,7 +194,6 @@ const Header = () => {
                   type="text"
                   placeholder="𞤧𞤢𞤦𞤼𞤮 𞤫 𞤃𞤢𞤦𞤢𞤤𞤫 𞤫 𞤣𞤫𞤬𞤼𞤫..."
                   className="w-full px-3 sm:px-4 py-3 pr-10 sm:pr-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-right text-sm sm:text-base transition-all duration-300 hover:border-gray-300"
-                  dir="rtl"
                   autoFocus
                 />
                 <HiSearch className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
@@ -230,7 +225,6 @@ const Header = () => {
                     ? 'text-black bg-gray-100 shadow-sm'
                     : 'text-gray-600 hover:text-black hover:bg-gray-50'
                 }`}
-                dir="rtl"
               >
                 {item.name}
               </Link>
@@ -243,7 +237,6 @@ const Header = () => {
                   to="/login"
                   onClick={() => setIsMenuOpen(false)}
                   className="block px-4 py-3 text-base font-medium text-gray-600 hover:text-black hover:bg-gray-50 transition-all duration-300 rounded-xl"
-                  dir="rtl"
                 >
                   𞤔𞤮𞤲𞤲𞤣𞤭
                 </Link>
@@ -251,7 +244,6 @@ const Header = () => {
                   to="/register"
                   onClick={() => setIsMenuOpen(false)}
                   className="block px-4 py-3 text-base font-medium bg-gradient-to-r from-black to-gray-800 text-white hover:from-gray-800 hover:to-black transition-all duration-300 rounded-xl text-center shadow-lg"
-                  dir="rtl"
                 >
                   𞤅𞤮𞤧𞤢𞤲
                 </Link>

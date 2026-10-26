@@ -1,120 +1,506 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { HiHome, HiDocumentText, HiBookOpen, HiUsers, HiChartBar, HiPlus, HiEye, HiPencil, HiTrash, HiMenu, HiX, HiShieldCheck } from 'react-icons/hi';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  HiHome, HiDocumentText, HiBookOpen, HiUsers, HiChartBar, HiPlus, HiEye, HiPencil, HiTrash,
+  HiMenu, HiX, HiCurrencyDollar, HiShoppingBag, HiViewGrid
+} from 'react-icons/hi';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LabelList } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/apiService';
+import { formatDate, formatNumber, formatPrice, getCategoryLabel } from '../utils/format';
+
+// Encre de la plateforme pour les graphiques (une seule série par graphique)
+const INK = '#111827';
+const GRID = '#e5e7eb';
+const AXIS = '#6b7280';
+const MONTHS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+const SIDEBAR_ITEMS = [
+  { id: 'dashboard', name: '𞤃𞤢𞤧𞤦𞤮𞤪𞤣', icon: HiViewGrid },
+  { id: 'statistics', name: '𞤅𞤼𞤢𞤼𞤭𞤧𞤼𞤭𞤳', icon: HiChartBar },
+  { id: 'articles', name: '𞤃𞤢𞤦𞤢𞤤𞤫', icon: HiDocumentText },
+  { id: 'ebooks', name: '𞤃𞤫𞤧𞤫', icon: HiBookOpen },
+  { id: 'users', name: '𞤖𞤮𞤪𞤦𞤫', icon: HiUsers }
+];
+
+// Infobulle sobre commune aux graphiques
+const ChartTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs shadow-lg">
+      <p className="font-semibold text-gray-900">{label}</p>
+      <p className="mt-0.5 text-gray-600">{formatNumber(payload[0].value)}</p>
+    </div>
+  );
+};
+
+const StatTile = ({ label, value, detail, icon: Icon }) => (
+  <div className="rounded-2xl border border-gray-200 bg-white p-5 transition-shadow hover:shadow-md">
+    <div className="flex items-start justify-between gap-4">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-gray-500">{label}</p>
+        <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900">{value}</p>
+        {detail && <p className="mt-1 text-xs text-gray-500">{detail}</p>}
+      </div>
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100">
+        {Icon && <Icon className="h-5 w-5 text-gray-900" aria-hidden="true" />}
+      </div>
+    </div>
+  </div>
+);
+
+const ChartCard = ({ title, subtitle, children, empty }) => (
+  <div className="rounded-2xl border border-gray-200 bg-white p-5">
+    <h3 className="font-semibold text-gray-900">{title}</h3>
+    {subtitle && <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>}
+    <div className="mt-4">
+      {empty ? <p className="py-16 text-center text-sm text-gray-400">Aucune donnée pour le moment</p> : children}
+    </div>
+  </div>
+);
+
+// Largeur mesurée du conteneur (ResponsiveContainer de Recharts restait à 0 px ici)
+const ChartFrame = ({ height, children }) => {
+  const ref = useRef(null);
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    const observer = new ResizeObserver(([entry]) => setWidth(Math.floor(entry.contentRect.width)));
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  return <div ref={ref} style={{ height }}>{width > 0 && children(width)}</div>;
+};
+
+// Barres fines (≤ 24 px), extrémité arrondie de 4 px, grille fine et discrète
+const ColumnChart = ({ data, dataKey, nameKey }) => (
+  <ChartFrame height={260}>{(width) => (
+    <BarChart width={width} height={260} data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+      <CartesianGrid vertical={false} stroke={GRID} />
+      <XAxis dataKey={nameKey} tickLine={false} axisLine={{ stroke: GRID }} tick={{ fill: AXIS, fontSize: 12 }} minTickGap={12} />
+      <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: AXIS, fontSize: 12 }} />
+      <Tooltip content={<ChartTooltip />} cursor={{ fill: '#f3f4f6' }} />
+      <Bar dataKey={dataKey} fill={INK} radius={[4, 4, 0, 0]} maxBarSize={24} />
+    </BarChart>
+  )}</ChartFrame>
+);
+
+const RankingChart = ({ data, dataKey, nameKey }) => {
+  const height = data.length * 44 + 8;
+  return (
+  <ChartFrame height={height}>{(width) => (
+    <BarChart width={width} height={height} data={data} layout="vertical" margin={{ top: 0, right: 40, bottom: 0, left: 0 }}>
+      <XAxis type="number" hide allowDecimals={false} domain={[0, 'dataMax']} />
+      <YAxis type="category" dataKey={nameKey} width={130} tickLine={false} axisLine={false} tick={{ fill: '#374151', fontSize: 12 }} />
+      <Tooltip content={<ChartTooltip />} cursor={{ fill: '#f3f4f6' }} />
+      <Bar dataKey={dataKey} fill={INK} radius={[0, 4, 4, 0]} maxBarSize={24}>
+        <LabelList dataKey={dataKey} position="right" formatter={formatNumber} style={{ fill: '#374151', fontSize: 12 }} />
+      </Bar>
+    </BarChart>
+  )}</ChartFrame>
+  );
+};
+
+const iconAction = 'inline-flex h-9 w-9 min-h-0 min-w-0 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900';
+const th = 'px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:px-6';
+const td = 'px-4 py-4 text-sm sm:px-6';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [stats, setStats] = useState({ articles: { total: 0, published: 0 }, ebooks: { total: 0, published: 0 }, users: { total: 0 } });
   const [allArticles, setAllArticles] = useState([]);
   const [allEbooks, setAllEbooks] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
+  const [totalRevenue, setTotalRevenue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [toast, setToast] = useState(null);
 
-  useEffect(() => {
-    if (!user || user.role !== 'admin') { navigate('/'); return; }
-    fetchData();
-  }, [user, navigate]);
+  const notify = useCallback((message, tone = 'success') => {
+    setToast({ message, tone });
+    setTimeout(() => setToast(null), 2500);
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [articlesRes, ebooksRes, usersRes] = await Promise.all([apiService.articles.getAll({ limit: 100 }), apiService.ebooks.getAll({ limit: 100 }), apiService.admin.getUsers({ limit: 100 })]);
-      const articlesData = articlesRes.data.data?.articles || articlesRes.data.articles || [];
-      const ebooksData = ebooksRes.data.data?.ebooks || ebooksRes.data.ebooks || [];
-      const usersData = usersRes.data.data?.users || usersRes.data.users || [];
-      setAllArticles(articlesData);
-      setAllEbooks(ebooksData);
-      setAllUsers(usersData);
-      setStats({ articles: { total: articlesData.length, published: articlesData.filter(a => a.status === 'published').length }, ebooks: { total: ebooksData.length, published: ebooksData.filter(e => e.status === 'published').length }, users: { total: usersData.length } });
-    } catch (error) { console.error(error); } finally { setLoading(false); }
-  }, []);
+      const [articlesRes, ebooksRes, usersRes, statsRes] = await Promise.all([
+        apiService.articles.getAll({ limit: 100 }),
+        apiService.ebooks.getAll({ limit: 100 }),
+        apiService.admin.getUsers({ limit: 100 }),
+        apiService.admin.getStats()
+      ]);
+      setAllArticles(articlesRes.data.data?.articles || []);
+      setAllEbooks(ebooksRes.data.data?.ebooks || []);
+      setAllUsers(usersRes.data.data?.users || []);
+      setTotalRevenue(statsRes.data.data?.stats?.totalRevenue || 0);
+    } catch {
+      notify('Impossible de charger les données', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [notify]);
 
-  const handleTogglePublish = useCallback(async (id, currentStatus) => {
+  useEffect(() => {
+    if (!user || user.role !== 'admin') { navigate('/'); return; }
+    fetchData();
+  }, [user, navigate, fetchData]);
+
+  const handleTogglePublish = async (id, currentStatus) => {
     try {
       await apiService.articles.togglePublished(id);
-      setAllArticles(prev => prev.map(a => a._id === id ? { ...a, status: currentStatus === 'published' ? 'draft' : 'published' } : a));
-      alert(currentStatus === 'published' ? '𞤃𞤢𞤦𞤢𞤤 𞤸𞤢𞤤𞤢𞤲𞤣𞤫 𞤫 𞤄𞤪𞤢𞤬𞤺' : '𞤃𞤢𞤦𞤢𞤤 𞤥𞤢𞤪𞤭𞤲𞤣𞤫');
-    } catch (error) { alert('𞤖𞤢𞤤𞤢'); }
-  }, []);
-
-  const handleDeleteArticle = useCallback(async (id) => {
-    if (window.confirm('𞤀 𞤴𞤮𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲?')) {
-      try { await apiService.articles.delete(id); setAllArticles(prev => prev.filter(a => a._id !== id)); alert('𞤸𞤢𞤤𞤢𞤲𞤣𞤫'); } catch { alert('𞤖𞤢𞤤𞤢'); }
+      setAllArticles(prev => prev.map(a => (a._id === id ? { ...a, status: currentStatus === 'published' ? 'draft' : 'published' } : a)));
+      notify(currentStatus === 'published' ? 'Article repassé en brouillon' : 'Article publié');
+    } catch {
+      notify('Action impossible', 'error');
     }
-  }, []);
+  };
 
-  const handleDeleteEbook = useCallback(async (id) => {
-    if (window.confirm('𞤀 𞤴𞤮𞤲𞤢𞤲 𞤸𞤢𞤤𞤢𞤲?')) {
-      try { await apiService.ebooks.delete(id); setAllEbooks(prev => prev.filter(e => e._id !== id)); alert('𞤸𞤢𞤤𞤢𞤲𞤣𞤫'); } catch { alert('𞤖𞤢𞤤𞤢'); }
+  const handleDeleteArticle = async (id) => {
+    if (!window.confirm('Supprimer définitivement cet article ?')) return;
+    try {
+      await apiService.articles.delete(id);
+      setAllArticles(prev => prev.filter(a => a._id !== id));
+      notify('Article supprimé');
+    } catch {
+      notify('Suppression impossible', 'error');
     }
-  }, []);
+  };
 
-  const handleUpdateUserRole = useCallback(async (id, newRole) => {
+  const handleDeleteEbook = async (id) => {
+    if (!window.confirm('Supprimer définitivement cet e-book ?')) return;
+    try {
+      await apiService.ebooks.delete(id);
+      setAllEbooks(prev => prev.filter(e => e._id !== id));
+      notify('E-book supprimé');
+    } catch {
+      notify('Suppression impossible', 'error');
+    }
+  };
+
+  const handleUpdateUserRole = async (id, newRole) => {
     try {
       await apiService.admin.updateUser(id, { role: newRole });
-      setAllUsers(prev => prev.map(u => u._id === id ? { ...u, role: newRole } : u));
-      alert('Rôle mis à jour');
-    } catch { alert('Erreur'); }
-  }, []);
-
-  const handleDeleteUser = useCallback(async (id) => {
-    if (window.confirm('Supprimer cet utilisateur?')) {
-      try { await apiService.admin.deleteUser(id); setAllUsers(prev => prev.filter(u => u._id !== id)); alert('Utilisateur supprimé'); } catch { alert('Erreur'); }
+      setAllUsers(prev => prev.map(u => (u._id === id ? { ...u, role: newRole } : u)));
+      notify('Rôle mis à jour');
+    } catch {
+      notify('Mise à jour impossible', 'error');
     }
-  }, []);
-
-  const getMonthlyData = () => {
-    const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-    const currentMonth = new Date().getMonth();
-    return months.slice(0, currentMonth + 1).map((month, idx) => {
-      const articlesCount = allArticles.filter(a => new Date(a.createdAt).getMonth() === idx).length;
-      const ebooksCount = allEbooks.filter(e => new Date(e.createdAt).getMonth() === idx).length;
-      return { month, articles: articlesCount, ebooks: ebooksCount, ventes: Math.floor(Math.random() * 50) + 10 };
-    });
   };
 
-  const getCategoryData = () => {
-    const categories = {};
-    allEbooks.forEach(e => { categories[e.category] = (categories[e.category] || 0) + 1; });
-    return Object.entries(categories).map(([name, value]) => ({ name, value }));
+  const handleDeleteUser = async (id) => {
+    if (!window.confirm('Supprimer cet utilisateur ?')) return;
+    try {
+      await apiService.admin.deleteUser(id);
+      setAllUsers(prev => prev.filter(u => u._id !== id));
+      notify('Utilisateur supprimé');
+    } catch {
+      notify('Suppression impossible', 'error');
+    }
   };
 
-  const sidebarItems = [
-    { id: 'home', name: '𞤪𞤵𞤼𞤢𞤲 𞤫 𞤀𞤧𞤵𞤤', icon: HiHome, isLink: true, href: '/' },
-    { id: 'dashboard', name: '𞤃𞤢𞤧𞤦𞤮𞤪𞤣', icon: HiChartBar },
-    { id: 'statistics', name: '𞤅𞤼𞤢𞤼𞤭𞤧𞤼𞤭𞤳', icon: HiChartBar },
-    { id: 'articles', name: '𞤃𞤢𞤦𞤢𞤤𞤫', icon: HiDocumentText },
-    { id: 'ebooks', name: '𞤃𞤫𞤧𞤫', icon: HiBookOpen },
-    { id: 'users', name: '𞤖𞤮𞤪𞤦𞤫', icon: HiUsers }
-  ];
+  // Données réelles uniquement
+  const publishedArticles = allArticles.filter(a => a.status === 'published').length;
+  const publishedEbooks = allEbooks.filter(e => e.status === 'published').length;
+  const totalSales = allEbooks.reduce((sum, e) => sum + (e.sales || 0), 0);
+  const currentYear = new Date().getFullYear();
+  const monthly = MONTHS.slice(0, new Date().getMonth() + 1).map((month, idx) => {
+    const inMonth = (item) => {
+      const d = new Date(item.publishedAt || item.createdAt);
+      return d.getFullYear() === currentYear && d.getMonth() === idx;
+    };
+    return { month, publications: allArticles.filter(inMonth).length + allEbooks.filter(inMonth).length };
+  });
+  const byCategory = Object.entries(
+    allEbooks.reduce((acc, e) => ({ ...acc, [e.category]: (acc[e.category] || 0) + 1 }), {})
+  ).map(([category, count]) => ({ name: getCategoryLabel(category), count })).sort((a, b) => b.count - a.count);
+  const topSellers = allEbooks
+    .filter(e => e.sales > 0)
+    .sort((a, b) => b.sales - a.sales)
+    .slice(0, 6)
+    .map(e => ({ name: e.title.length > 18 ? `${e.title.slice(0, 17)}…` : e.title, sales: e.sales }));
 
-  const COLORS = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#06B6D4'];
+  const activeItem = SIDEBAR_ITEMS.find(i => i.id === activeTab);
 
-  if (loading) return (<div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center"><div className="text-center"><div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div><p className="text-gray-700 font-medium">𞤔𞤢𞤪𞤭 𞤸𞤢𞤤𞤢𞤲𞤣𞤫...</p></div></div>);
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-black" aria-label="Chargement" />
+      </div>
+    );
+  }
+
+  const tableCard = (children) => (
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto">
+        <table className="table w-full min-w-[640px]">{children}</table>
+      </div>
+    </div>
+  );
+
+  const newButton = (to, label) => (
+    <Link
+      to={to}
+      className="inline-flex min-h-0 items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+    >
+      <HiPlus className="h-4 w-4" aria-hidden="true" />
+      {label}
+    </Link>
+  );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50">
-      <div className="lg:hidden fixed top-4 left-4 z-50"><button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-3 bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all">{sidebarOpen ? <HiX className="h-6 w-6" /> : <HiMenu className="h-6 w-6" />}</button></div>
-      {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-30" onClick={() => setSidebarOpen(false)} />}
-      <div className={`fixed lg:static inset-y-0 left-0 z-40 lg:w-72 w-72 bg-white shadow-2xl transform transition-all duration-300 flex flex-col h-screen ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-600 flex-shrink-0"><h2 className="text-2xl font-bold text-white flex items-center" dir="rtl"><span className="text-3xl mr-3">⚙️</span> 𞤀𞤣𞤥𞤭𞤲</h2></div>
-        <nav className="flex-1 overflow-y-auto py-4 px-3">{sidebarItems.map((item) => (item.isLink ? (<Link key={item.id} to={item.href} onClick={() => setSidebarOpen(false)} className="flex items-center px-4 py-3 mb-1 text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-xl transition-all group" dir="rtl"><item.icon className="h-5 w-5 ml-3 text-gray-500 group-hover:text-blue-600" /><span className="font-medium">{item.name}</span></Link>) : (<button key={item.id} onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }} className={`w-full flex items-center px-4 py-3 mb-1 rounded-xl transition-all ${activeTab === item.id ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50'} group`} dir="rtl"><item.icon className={`h-5 w-5 ml-3 ${activeTab === item.id ? 'text-white' : 'text-gray-500 group-hover:text-blue-600'}`} /><span className="font-medium">{item.name}</span></button>)))}</nav>
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-4 sm:p-6 lg:p-8">
-          {activeTab === 'dashboard' && (<div><h1 className="text-3xl sm:text-4xl font-bold mb-8 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent" dir="rtl">𞤃𞤢𞤧𞤦𞤮𞤪𞤣</h1><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"><div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1"><div className="flex items-center justify-between"><div><p className="text-blue-100 text-sm font-medium" dir="rtl">𞤃𞤢𞤦𞤢𞤤𞤫</p><p className="text-4xl font-bold text-white mt-2">{stats.articles.total}</p><p className="text-blue-100 text-xs mt-2">𞤅𞤢𞤪𞤭𞤲𞤣𞤫: {stats.articles.published}</p></div><HiDocumentText className="h-16 w-16 text-blue-200 opacity-50" /></div></div><div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1"><div className="flex items-center justify-between"><div><p className="text-green-100 text-sm font-medium" dir="rtl">𞤃𞤫𞤧𞤫</p><p className="text-4xl font-bold text-white mt-2">{stats.ebooks.total}</p><p className="text-green-100 text-xs mt-2">𞤅𞤢𞤪𞤭𞤲𞤣𞤫: {stats.ebooks.published}</p></div><HiBookOpen className="h-16 w-16 text-green-200 opacity-50" /></div></div><div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1"><div className="flex items-center justify-between"><div><p className="text-purple-100 text-sm font-medium" dir="rtl">𞤖𞤮𞤪𞤦𞤫</p><p className="text-4xl font-bold text-white mt-2">{stats.users.total}</p><p className="text-purple-100 text-xs mt-2">𞤀𞤳𞤼𞤭𞤬</p></div><HiUsers className="h-16 w-16 text-purple-200 opacity-50" /></div></div></div></div>)}
-          {activeTab === 'statistics' && (<div><h1 className="text-3xl sm:text-4xl font-bold mb-8 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent" dir="rtl">𞤅𞤼𞤢𞤼𞤭𞤧𞤼𞤭𞤳 & 𞤜𞤫𞤲𞤼𞤫𞤧</h1><div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><div className="bg-white p-6 rounded-2xl shadow-xl"><h3 className="text-lg font-bold mb-4 text-gray-800" dir="rtl">𞤜𞤫𞤲𞤼𞤫𞤧 𞤸𞤭𞤼𞤢𞤲𞤣𞤫</h3><ResponsiveContainer width="100%" height={300}><BarChart data={getMonthlyData()}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis /><Tooltip /><Legend /><Bar dataKey="ventes" fill="#3B82F6" name="Ventes" /><Bar dataKey="ebooks" fill="#10B981" name="E-books" /></BarChart></ResponsiveContainer></div><div className="bg-white p-6 rounded-2xl shadow-xl"><h3 className="text-lg font-bold mb-4 text-gray-800" dir="rtl">𞤀𞤣𞤢𞤣𞤮 𞤃𞤫𞤧𞤫 & 𞤃𞤢𞤦𞤢𞤤𞤫</h3><ResponsiveContainer width="100%" height={300}><LineChart data={getMonthlyData()}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis /><Tooltip /><Legend /><Line type="monotone" dataKey="articles" stroke="#3B82F6" strokeWidth={2} name="Articles" /><Line type="monotone" dataKey="ebooks" stroke="#10B981" strokeWidth={2} name="E-books" /></LineChart></ResponsiveContainer></div><div className="bg-white p-6 rounded-2xl shadow-xl"><h3 className="text-lg font-bold mb-4 text-gray-800" dir="rtl">𞤃𞤫𞤧𞤫 𞤸𞤭𞤼𞤢𞤲𞤣𞤫 𞤳𞤢𞤼𞤫𞤺𞤮𞤪𞤭</h3><ResponsiveContainer width="100%" height={300}><PieChart><Pie data={getCategoryData()} cx="50%" cy="50%" labelLine={false} label={(entry) => entry.name} outerRadius={80} fill="#8884d8" dataKey="value">{getCategoryData().map((entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />))}</Pie><Tooltip /></PieChart></ResponsiveContainer></div><div className="bg-white p-6 rounded-2xl shadow-xl"><h3 className="text-lg font-bold mb-4 text-gray-800" dir="rtl">𞤅𞤼𞤢𞤼𞤭𞤧𞤼𞤭𞤳 𞤜𞤫𞤲𞤼𞤫</h3><div className="space-y-4"><div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl"><span className="font-medium text-gray-700">Total Ventes</span><span className="text-2xl font-bold text-blue-600">{getMonthlyData().reduce((acc, m) => acc + m.ventes, 0)}</span></div><div className="flex justify-between items-center p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl"><span className="font-medium text-gray-700">E-books Vendus</span><span className="text-2xl font-bold text-green-600">{stats.ebooks.published}</span></div><div className="flex justify-between items-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl"><span className="font-medium text-gray-700">Revenu Estimé</span><span className="text-2xl font-bold text-purple-600">{(getMonthlyData().reduce((acc, m) => acc + m.ventes, 0) * 5000).toLocaleString()} GNF</span></div></div></div></div></div>)}
-          {activeTab === 'articles' && (<div><div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4" dir="rtl"><h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">𞤃𞤢𞤦𞤢𞤤𞤫</h1><Link to="/admin/articles/new" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl flex items-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 font-medium"><HiPlus className="h-5 w-5 ml-2" />𞤃𞤢𞤦𞤢𞤤 𞤑𞤫𞤧𞤮</Link></div><div className="bg-white rounded-2xl shadow-xl overflow-hidden"><div className="overflow-x-auto"><table className="w-full"><thead className="bg-gradient-to-r from-gray-50 to-gray-100"><tr><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤚𞤢𞤦𞤭</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤅𞤼𞤢𞤼𞤵𞤧</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤚𞤢𞤪𞤭𞤸</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤀𞤳𞤧𞤢𞤲</th></tr></thead><tbody className="divide-y divide-gray-100">{allArticles.map((article) => (<tr key={article._id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-colors"><td className="px-4 sm:px-6 py-4 text-sm font-medium text-gray-900" dir="rtl">{article.title}</td><td className="px-4 sm:px-6 py-4"><button onClick={() => handleTogglePublish(article._id, article.status)} className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-all hover:scale-105 ${article.status === 'published' ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md' : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-md'}`}>{article.status === 'published' ? '𞤅𞤢𞤪𞤭𞤲𞤣𞤫' : '𞤄𞤪𞤢𞤬𞤺'}</button></td><td className="px-4 sm:px-6 py-4 text-sm text-gray-600">{new Date(article.createdAt).toLocaleDateString()}</td><td className="px-4 sm:px-6 py-4"><div className="flex space-x-2"><Link to={`/articles/${article.slug}`} target="_blank" className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"><HiEye className="h-5 w-5" /></Link><Link to={`/admin/articles/edit/${article._id}`} className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors"><HiPencil className="h-5 w-5" /></Link><button onClick={() => handleDeleteArticle(article._id)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"><HiTrash className="h-5 w-5" /></button></div></td></tr>))}</tbody></table></div></div></div>)}
-          {activeTab === 'ebooks' && (<div><div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4" dir="rtl"><h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">𞤃𞤫𞤧𞤫</h1><Link to="/admin/ebooks/new" className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl flex items-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 font-medium"><HiPlus className="h-5 w-5 ml-2" />𞤃𞤫𞤧𞤮 𞤑𞤫𞤧𞤮</Link></div><div className="bg-white rounded-2xl shadow-xl overflow-hidden"><div className="overflow-x-auto"><table className="w-full"><thead className="bg-gradient-to-r from-gray-50 to-gray-100"><tr><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤚𞤢𞤦𞤭</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤅𞤢𞤪𞤣𞤭𞤪𞤢𞤤</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤅𞤢𞤪𞤭</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤚𞤢𞤪𞤭𞤸</th><th className="px-4 sm:px-6 py-4 text-right text-xs sm:text-sm font-semibold text-gray-700">𞤀𞤳𞤧𞤢𞤲</th></tr></thead><tbody className="divide-y divide-gray-100">{allEbooks.map((ebook) => (<tr key={ebook._id} className="hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 transition-colors"><td className="px-4 sm:px-6 py-4 text-sm font-medium text-gray-900" dir="rtl">{ebook.title}</td><td className="px-4 sm:px-6 py-4 text-sm text-gray-700" dir="rtl">{ebook.author}</td><td className="px-4 sm:px-6 py-4 text-sm font-bold text-green-600">{ebook.price?.toLocaleString()} GNF</td><td className="px-4 sm:px-6 py-4 text-sm text-gray-600">{new Date(ebook.createdAt).toLocaleDateString()}</td><td className="px-4 sm:px-6 py-4"><div className="flex space-x-2"><Link to={`/ebooks/${ebook.slug}`} target="_blank" className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"><HiEye className="h-5 w-5" /></Link><Link to={`/admin/ebooks/edit/${ebook._id}`} className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors"><HiPencil className="h-5 w-5" /></Link><button onClick={() => handleDeleteEbook(ebook._id)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"><HiTrash className="h-5 w-5" /></button></div></td></tr>))}</tbody></table></div></div></div>)}
-          {activeTab === 'users' && (<div><div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4" dir="rtl"><h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">𞤖𞤮𞤪𞤦𞤫</h1></div><div className="bg-white rounded-2xl shadow-xl overflow-hidden"><div className="overflow-x-auto"><table className="w-full"><thead className="bg-gradient-to-r from-gray-50 to-gray-100"><tr><th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Nom</th><th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Email</th><th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Rôle</th><th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Date</th><th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Actions</th></tr></thead><tbody className="divide-y divide-gray-100">{allUsers.map((user) => (<tr key={user._id} className="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-colors"><td className="px-4 sm:px-6 py-4 text-sm font-medium text-gray-900">{user.name}</td><td className="px-4 sm:px-6 py-4 text-sm text-gray-700">{user.email}</td><td className="px-4 sm:px-6 py-4"><select value={user.role} onChange={(e) => handleUpdateUserRole(user._id, e.target.value)} className={`px-3 py-1.5 text-xs font-semibold rounded-full border-0 ${user.role === 'admin' ? 'bg-gradient-to-r from-red-500 to-red-600 text-white' : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'}`}><option value="user">User</option><option value="admin">Admin</option></select></td><td className="px-4 sm:px-6 py-4 text-sm text-gray-600">{new Date(user.createdAt).toLocaleDateString()}</td><td className="px-4 sm:px-6 py-4"><button onClick={() => handleDeleteUser(user._id)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"><HiTrash className="h-5 w-5" /></button></td></tr>))}</tbody></table></div></div></div>)}
+    <div className="flex h-screen overflow-hidden bg-gray-50">
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} aria-hidden="true" />
+      )}
+
+      {/* Barre latérale */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-black text-white transition-transform duration-300 lg:static lg:translate-x-0 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex items-center justify-between px-6 py-6">
+          <Link to="/" className="text-2xl font-bold tracking-tight">𞤀𞤣𞤤𞤢𞤥</Link>
+          <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-white/80">𞤀𞤣𞤥𞤭𞤲</span>
         </div>
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3">
+          {SIDEBAR_ITEMS.map(item => {
+            const active = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+                aria-current={active ? 'page' : undefined}
+                className={`flex w-full min-h-0 items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
+                  active ? 'bg-white text-black' : 'text-white/70 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <item.icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                <span>{item.name}</span>
+              </button>
+            );
+          })}
+        </nav>
+        <div className="border-t border-white/10 p-3">
+          <Link to="/" className="flex min-h-0 items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white">
+            <HiHome className="h-5 w-5" aria-hidden="true" />
+            𞤪𞤵𞤼𞤢𞤲 𞤫 𞤀𞤧𞤵𞤤
+          </Link>
+          <div className="mt-2 flex items-center gap-3 px-4 py-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-bold text-black">
+              {user?.name?.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">{user?.name}</p>
+              <p className="truncate text-xs text-white/50">{user?.email}</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Contenu */}
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-4 sm:px-8">
+          <button type="button" onClick={() => setSidebarOpen(true)} className={`${iconAction} lg:hidden`} aria-label="Ouvrir le menu">
+            <HiMenu className="h-6 w-6" />
+          </button>
+          <h1 className="flex-1 text-xl font-bold text-gray-900 sm:text-2xl">{activeItem?.name}</h1>
+          {activeTab === 'articles' && newButton('/admin/articles/new', '𞤃𞤢𞤦𞤢𞤤 𞤑𞤫𞤧𞤮')}
+          {activeTab === 'ebooks' && newButton('/admin/ebooks/new', '𞤃𞤫𞤧𞤮 𞤑𞤫𞤧𞤮')}
+        </header>
+
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8">
+          {activeTab === 'dashboard' && (
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <StatTile label="𞤃𞤢𞤦𞤢𞤤𞤫" value={formatNumber(allArticles.length)} detail={`𞤅𞤢𞤪𞤭𞤲𞤣𞤫 : ${formatNumber(publishedArticles)}`} icon={HiDocumentText} />
+                <StatTile label="𞤃𞤫𞤧𞤫" value={formatNumber(allEbooks.length)} detail={`𞤅𞤢𞤪𞤭𞤲𞤣𞤫 : ${formatNumber(publishedEbooks)}`} icon={HiBookOpen} />
+                <StatTile label="𞤖𞤮𞤪𞤦𞤫" value={formatNumber(allUsers.length)} detail={`Admins : ${formatNumber(allUsers.filter(u => u.role === 'admin').length)}`} icon={HiUsers} />
+                <StatTile label="Revenus" value={totalRevenue ? formatPrice(totalRevenue) : formatNumber(0)} detail={`𞤜𞤫𞤲𞤼𞤫𞤧 : ${formatNumber(totalSales)}`} icon={HiCurrencyDollar} />
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+                  <div className="flex items-center justify-between px-5 py-4">
+                    <h2 className="font-semibold text-gray-900">𞤃𞤢𞤦𞤢𞤤𞤫</h2>
+                    <button type="button" onClick={() => setActiveTab('articles')} className="min-h-0 text-sm font-medium text-gray-500 hover:text-gray-900">Tout voir</button>
+                  </div>
+                  <ul className="divide-y divide-gray-100">
+                    {allArticles.slice(0, 5).map(a => (
+                      <li key={a._id} className="flex items-center justify-between gap-4 px-5 py-3">
+                        <span className="truncate text-sm text-gray-900">{a.title}</span>
+                        <span className="shrink-0 text-xs text-gray-500">{formatDate(a.createdAt)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+                  <div className="flex items-center justify-between px-5 py-4">
+                    <h2 className="font-semibold text-gray-900">𞤃𞤫𞤧𞤫</h2>
+                    <button type="button" onClick={() => setActiveTab('ebooks')} className="min-h-0 text-sm font-medium text-gray-500 hover:text-gray-900">Tout voir</button>
+                  </div>
+                  <ul className="divide-y divide-gray-100">
+                    {allEbooks.slice(0, 5).map(e => (
+                      <li key={e._id} className="flex items-center justify-between gap-4 px-5 py-3">
+                        <span className="truncate text-sm text-gray-900">{e.title}</span>
+                        <span className="shrink-0 text-xs font-medium text-gray-700">{formatPrice(e.price)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'statistics' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <StatTile label="𞤜𞤫𞤲𞤼𞤫𞤧" value={formatNumber(totalSales)} detail="E-books vendus" icon={HiShoppingBag} />
+                <StatTile label="Revenus" value={totalRevenue ? formatPrice(totalRevenue) : formatNumber(0)} detail="Total encaissé" icon={HiCurrencyDollar} />
+                <StatTile label="Vues" value={formatNumber(allArticles.reduce((s, a) => s + (a.views || 0), 0) + allEbooks.reduce((s, e) => s + (e.views || 0), 0))} detail="Articles et e-books" icon={HiEye} />
+              </div>
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <ChartCard title="Publications par mois" subtitle={`Articles et e-books publiés en ${currentYear}`} empty={!monthly.some(m => m.publications)}>
+                  <ColumnChart data={monthly} dataKey="publications" nameKey="month" />
+                </ChartCard>
+                <ChartCard title="E-books par catégorie" empty={!byCategory.length}>
+                  <RankingChart data={byCategory} dataKey="count" nameKey="name" />
+                </ChartCard>
+                <ChartCard title="Meilleures ventes" subtitle="Nombre d'exemplaires vendus" empty={!topSellers.length}>
+                  <RankingChart data={topSellers} dataKey="sales" nameKey="name" />
+                </ChartCard>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'articles' && tableCard(
+            <>
+              <thead className="border-b border-gray-200 bg-gray-50">
+                <tr><th className={th}>𞤚𞤢𞤦𞤭</th><th className={th}>𞤅𞤼𞤢𞤼𞤵𞤧</th><th className={th}>𞤚𞤢𞤪𞤭𞤸</th><th className={`${th} text-right`}>𞤀𞤳𞤧𞤢𞤲</th></tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {allArticles.map(article => (
+                  <tr key={article._id} className="transition-colors hover:bg-gray-50">
+                    <td className={`${td} font-medium text-gray-900`}>{article.title}</td>
+                    <td className={td}>
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePublish(article._id, article.status)}
+                        title="Changer le statut"
+                        className={`min-h-0 rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                          article.status === 'published' ? 'bg-black text-white hover:bg-gray-800' : 'border border-gray-300 text-gray-600 hover:border-gray-900'
+                        }`}
+                      >
+                        {article.status === 'published' ? '𞤅𞤢𞤪𞤭𞤲𞤣𞤫' : '𞤄𞤪𞤢𞤬𞤺'}
+                      </button>
+                    </td>
+                    <td className={`${td} text-gray-500`}>{formatDate(article.createdAt)}</td>
+                    <td className={`${td} text-right`}>
+                      <div className="inline-flex gap-1">
+                        <Link to={`/articles/${article.slug}`} target="_blank" className={iconAction} aria-label="Voir"><HiEye className="h-5 w-5" /></Link>
+                        <Link to={`/admin/articles/edit/${article._id}`} className={iconAction} aria-label="Modifier"><HiPencil className="h-5 w-5" /></Link>
+                        <button type="button" onClick={() => handleDeleteArticle(article._id)} className={`${iconAction} hover:bg-red-50 hover:text-red-600`} aria-label="Supprimer"><HiTrash className="h-5 w-5" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </>
+          )}
+
+          {activeTab === 'ebooks' && tableCard(
+            <>
+              <thead className="border-b border-gray-200 bg-gray-50">
+                <tr><th className={th}>𞤚𞤢𞤦𞤭</th><th className={th}>𞤅𞤢𞤪𞤣𞤭𞤪𞤢𞤤</th><th className={th}>𞤅𞤢𞤪𞤭</th><th className={th}>𞤜𞤫𞤲𞤼𞤫𞤧</th><th className={th}>𞤚𞤢𞤪𞤭𞤸</th><th className={`${th} text-right`}>𞤀𞤳𞤧𞤢𞤲</th></tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {allEbooks.map(ebook => (
+                  <tr key={ebook._id} className="transition-colors hover:bg-gray-50">
+                    <td className={`${td} font-medium text-gray-900`}>{ebook.title}</td>
+                    <td className={`${td} text-gray-600`}>{ebook.author}</td>
+                    <td className={`${td} font-semibold text-gray-900`}>{formatPrice(ebook.price)}</td>
+                    <td className={`${td} text-gray-600`}>{formatNumber(ebook.sales)}</td>
+                    <td className={`${td} text-gray-500`}>{formatDate(ebook.createdAt)}</td>
+                    <td className={`${td} text-right`}>
+                      <div className="inline-flex gap-1">
+                        <Link to={`/ebooks/${ebook.slug}`} target="_blank" className={iconAction} aria-label="Voir"><HiEye className="h-5 w-5" /></Link>
+                        <Link to={`/admin/ebooks/edit/${ebook._id}`} className={iconAction} aria-label="Modifier"><HiPencil className="h-5 w-5" /></Link>
+                        <button type="button" onClick={() => handleDeleteEbook(ebook._id)} className={`${iconAction} hover:bg-red-50 hover:text-red-600`} aria-label="Supprimer"><HiTrash className="h-5 w-5" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </>
+          )}
+
+          {activeTab === 'users' && tableCard(
+            <>
+              <thead className="border-b border-gray-200 bg-gray-50">
+                <tr><th className={th}>Nom</th><th className={th}>Email</th><th className={th}>Rôle</th><th className={th}>Inscription</th><th className={`${th} text-right`}>Actions</th></tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {allUsers.map(member => {
+                  const isSelf = member._id === user?.id || member._id === user?._id;
+                  return (
+                    <tr key={member._id} className="transition-colors hover:bg-gray-50">
+                      <td className={`${td} font-medium text-gray-900`}>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
+                            {member.name?.charAt(0).toUpperCase()}
+                          </div>
+                          {member.name}
+                        </div>
+                      </td>
+                      <td className={`${td} text-gray-600`}>{member.email}</td>
+                      <td className={td}>
+                        <select
+                          value={member.role}
+                          onChange={(e) => handleUpdateUserRole(member._id, e.target.value)}
+                          disabled={isSelf}
+                          aria-label={`Rôle de ${member.name}`}
+                          className={`min-h-0 rounded-full border px-3 py-1 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-gray-900/20 disabled:cursor-not-allowed ${
+                            member.role === 'admin' ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-gray-700'
+                          }`}
+                        >
+                          <option value="user">Utilisateur</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </td>
+                      <td className={`${td} text-gray-500`}>{formatDate(member.createdAt)}</td>
+                      <td className={`${td} text-right`}>
+                        {!isSelf && (
+                          <button type="button" onClick={() => handleDeleteUser(member._id)} className={`${iconAction} hover:bg-red-50 hover:text-red-600`} aria-label="Supprimer">
+                            <HiTrash className="h-5 w-5" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </>
+          )}
+        </main>
       </div>
+
+      {/* Bouton de fermeture du menu mobile */}
+      {sidebarOpen && (
+        <button type="button" onClick={() => setSidebarOpen(false)} className="fixed right-4 top-4 z-50 flex h-10 w-10 min-h-0 items-center justify-center rounded-full bg-white shadow-lg lg:hidden" aria-label="Fermer le menu">
+          <HiX className="h-5 w-5" />
+        </button>
+      )}
+
+      {toast && (
+        <div
+          role="status"
+          className={`fixed bottom-6 right-6 z-50 rounded-xl px-4 py-3 text-sm font-medium text-white shadow-lg auth-enter ${toast.tone === 'error' ? 'bg-red-600' : 'bg-gray-900'}`}
+        >
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 };

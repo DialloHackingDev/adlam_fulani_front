@@ -84,7 +84,7 @@ const UserManagement = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h2 className="text-2xl font-bold text-gray-900" dir="rtl">
+        <h2 className="text-2xl font-bold text-gray-900">
           𞤖𞤮𞤪𞤦𞤫 𞤃𞤢𞤲𞤢𞤺𞤫
         </h2>
         <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
@@ -141,14 +141,14 @@ const UserManagement = () => {
               {users.map((user) => (
                 <tr key={user._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
-                    <div className="flex items-center space-x-3 space-x-reverse">
+                    <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                         <span className="text-white font-medium text-sm">
                           {user.name?.charAt(0)?.toUpperCase() || 'U'}
                         </span>
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900" dir="rtl">
+                        <div className="text-sm font-medium text-gray-900">
                           {user.name}
                         </div>
                         <div className="text-sm text-gray-500 flex items-center">
@@ -199,7 +199,7 @@ const UserManagement = () => {
         {totalPages > 1 && (
           <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700" dir="rtl">
+              <div className="text-sm text-gray-700">
                 𞤆𞤫𞤶 {currentPage} 𞤫 {totalPages}
               </div>
               <div className="flex items-center space-x-2">

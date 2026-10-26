@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   HiHome, 
-  HiChevronLeft, 
+  HiChevronRight, 
   HiShoppingCart, 
   HiStar, 
   HiEye,
-  HiHeart,
   HiDownload,
   HiLockClosed,
   HiBookOpen,
@@ -15,6 +14,7 @@ import {
 } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { formatNumber, formatPrice as formatAdlamPrice } from '../utils/format';
 import { apiService, getImageUrl } from '../services/apiService';
 import PDFViewer from '../components/PDFViewer';
 
@@ -37,12 +37,14 @@ const EbookDetail = () => {
     try {
       setLoading(true);
       const response = await apiService.ebooks.getBySlug(slug);
-      setEbook(response.data.ebook);
-      
-      // Check if user has purchased this ebook
+      // Réponse API : { status, data: { ebook } }
+      const ebookData = response.data.data.ebook;
+      setEbook(ebookData);
+
+      // Vérifier si l'utilisateur possède déjà cet e-book
       if (user) {
-        // TODO: Check purchase status from API
-        setIsPurchased(false);
+        const purchased = await apiService.checkout.getPurchasedEbooks();
+        setIsPurchased(purchased.data.data.ebooks.some(e => e._id === ebookData._id));
       }
     } catch (error) {
       if (error.response?.status === 404) {
@@ -115,14 +117,7 @@ const EbookDetail = () => {
     setActiveTab('preview');
   };
 
-  const formatPrice = (price) => {
-    if (price === 0) return '𞤀𞤦𞤫𞤧𞤫';
-    return new Intl.NumberFormat('ar', {
-      style: 'currency',
-      currency: 'GNF',
-      minimumFractionDigits: 0
-    }).format(price);
-  };
+  const formatPrice = (price) => formatAdlamPrice(price);
 
 
 
@@ -140,7 +135,7 @@ const EbookDetail = () => {
   if (!ebook) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center" dir="rtl">
+        <div className="text-center">
           <HiBookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-4">𞤃𞤫𞤧𞤮 𞤧𞤢𞤦𞤢𞤲𞤢𞤲</h2>
           <Link to="/ebooks" className="text-black hover:underline">
@@ -156,16 +151,16 @@ const EbookDetail = () => {
       {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <nav className="flex items-center space-x-2 space-x-reverse text-sm" dir="rtl">
+          <nav className="flex items-center space-x-2 text-sm">
             <Link to="/" className="text-gray-500 hover:text-black flex items-center transition-colors">
               <HiHome className="h-4 w-4 ml-1" />
               𞤀𞤧𞤵𞤤
             </Link>
-            <HiChevronLeft className="h-4 w-4 text-gray-400" />
+            <HiChevronRight className="h-4 w-4 text-gray-400" />
             <Link to="/ebooks" className="text-gray-500 hover:text-black transition-colors">
               𞤃𞤫𞤧𞤫
             </Link>
-            <HiChevronLeft className="h-4 w-4 text-gray-400" />
+            <HiChevronRight className="h-4 w-4 text-gray-400" />
             <span className="text-gray-900 truncate max-w-xs font-medium">{ebook.title}</span>
           </nav>
         </div>
@@ -199,8 +194,7 @@ const EbookDetail = () => {
                   // Ebook gratuit - Bouton de lecture directe
                   <button
                     onClick={handleReadClick}
-                    className="w-full bg-black text-white py-4 px-6 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2 space-x-reverse"
-                    dir="rtl"
+                    className="w-full bg-black text-white py-4 px-6 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2"
                   >
                     {!user ? <HiLockClosed className="h-5 w-5 ml-2" /> : <HiBookOpen className="h-5 w-5 ml-2" />}
                     <span>{user ? '𞤑𞤢𞤪𞤢𞤲 𞤔𞤮𞤲𞤭 (𞤀𞤦𞤫𞤧𞤫)' : '𞤔𞤮𞤲𞤲𞤣𞤭 𞤫 𞤑𞤢𞤪𞤢𞤲'}</span>
@@ -210,8 +204,7 @@ const EbookDetail = () => {
                   <>
                     <button
                       onClick={handleReadClick}
-                      className="w-full bg-black text-white py-4 px-6 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2 space-x-reverse"
-                      dir="rtl"
+                      className="w-full bg-black text-white py-4 px-6 rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2"
                     >
                       {!user ? <HiLockClosed className="h-5 w-5 ml-2" /> : <HiBookOpen className="h-5 w-5 ml-2" />}
                       <span>{user ? '𞤑𞤢𞤪𞤢𞤲 𞤔𞤮𞤲𞤭' : '𞤔𞤮𞤲𞤲𞤣𞤭 𞤫 𞤑𞤢𞤪𞤢𞤲'}</span>
@@ -221,7 +214,6 @@ const EbookDetail = () => {
                       onClick={handleBuyNow}
                       disabled={cartLoading}
                       className="w-full bg-white border-2 border-black text-black py-4 px-6 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
-                      dir="rtl"
                     >
                       𞤧𞤢𞤴𞤢𞤲 𞤔𞤮𞤲𞤭
                     </button>
@@ -229,8 +221,7 @@ const EbookDetail = () => {
                     <button
                       onClick={handleAddToCart}
                       disabled={cartLoading}
-                      className="w-full bg-gray-100 text-gray-800 py-4 px-6 rounded-xl font-medium hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2 space-x-reverse disabled:opacity-50"
-                      dir="rtl"
+                      className="w-full bg-gray-100 text-gray-800 py-4 px-6 rounded-xl font-medium hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
                     >
                       {!user ? <HiLockClosed className="h-5 w-5 ml-2" /> : <HiShoppingCart className="h-5 w-5 ml-2" />}
                       <span>{user ? '𞤑𞤢𞤦𞤢𞤤 𞤫 𞤨𞤢𞤲𞤭𞤴𞤫' : '𞤔𞤮𞤲𞤲𞤣𞤭 𞤫 𞤧𞤢𞤴𞤢𞤲'}</span>
@@ -242,7 +233,7 @@ const EbookDetail = () => {
           </div>
 
           {/* Right: Details */}
-          <div className="lg:col-span-3" dir="rtl">
+          <div className="lg:col-span-3">
             {/* Title & Author */}
             <div className="mb-8">
               <h1 className="text-4xl md:text-5xl font-bold text-black mb-4 leading-tight">
@@ -254,35 +245,36 @@ const EbookDetail = () => {
             </div>
 
             {/* Rating & Stats */}
-            <div className="flex items-center space-x-6 space-x-reverse mb-8 p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex items-center">
-                <div className="flex items-center ml-2">
-                  {[...Array(5)].map((_, i) => (
-                    <HiStar key={i} className="h-5 w-5 text-yellow-400" />
-                  ))}
+            {/* Uniquement des statistiques réelles (la note n'apparaît qu'avec de vrais avis) */}
+            <div className="flex flex-wrap items-center gap-6 mb-8 p-6 bg-white rounded-2xl shadow-sm border border-gray-100 text-gray-600">
+              {ebook.rating?.count > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <HiStar
+                        key={i}
+                        className={`h-5 w-5 ${i < Math.round(ebook.rating.average) ? 'text-yellow-400' : 'text-gray-300'}`}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-medium">
+                    ({formatNumber(ebook.rating.average)}) {formatNumber(ebook.rating.count)} 𞤀𞤪𞤣𞤫
+                  </span>
                 </div>
-                <span className="text-gray-600 font-medium">(4.8) 127 𞤀𞤪𞤣𞤫</span>
+              )}
+              <div className="flex items-center gap-1.5">
+                <HiEye className="h-4 w-4" />
+                <span>{formatNumber(ebook.views)}</span>
               </div>
-              
-              <div className="flex items-center space-x-4 space-x-reverse text-gray-600">
-                <div className="flex items-center">
-                  <HiEye className="h-4 w-4 ml-1" />
-                  <span>{ebook.views || Math.floor(Math.random() * 1000) + 500}</span>
-                </div>
-                <div className="flex items-center">
-                  <HiHeart className="h-4 w-4 ml-1" />
-                  <span>{ebook.likes || Math.floor(Math.random() * 100) + 50}</span>
-                </div>
-                <div className="flex items-center">
-                  <HiDownload className="h-4 w-4 ml-1" />
-                  <span>{ebook.downloads || Math.floor(Math.random() * 200) + 100}</span>
-                </div>
+              <div className="flex items-center gap-1.5">
+                <HiDownload className="h-4 w-4" />
+                <span>{formatNumber(ebook.downloads)}</span>
               </div>
             </div>
 
             {/* Price */}
             <div className="mb-8">
-              <div className="flex items-center space-x-4 space-x-reverse">
+              <div className="flex items-center space-x-4">
                 <p className="text-4xl font-bold text-black">
                   {formatPrice(ebook.price || 0)}
                 </p>
@@ -296,11 +288,11 @@ const EbookDetail = () => {
 
             {/* Tabs */}
             <div className="border-b border-gray-200 mb-8">
-              <nav className="flex space-x-8 space-x-reverse">
+              <nav className="flex space-x-8">
                 {[
                   { id: 'description', name: '𞤅𞤢𞤪𞤣𞤫', icon: null },
                   { id: 'preview', name: '𞤴𞤮𞤲𞤢𞤲', icon: user ? null : HiLockClosed },
-                  { id: 'reviews', name: '𞤀𞤪𞤣𞤫 (127)', icon: null }
+                  { id: 'reviews', name: '𞤀𞤪𞤣𞤫', icon: null }
                 ].map((tab) => {
                   const IconComponent = tab.icon;
                   return (
@@ -313,7 +305,7 @@ const EbookDetail = () => {
                         }
                         setActiveTab(tab.id);
                       }}
-                      className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 space-x-reverse transition-colors ${
+                      className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors ${
                         activeTab === tab.id
                           ? 'border-black text-black'
                           : 'border-transparent text-gray-500 hover:text-gray-700'

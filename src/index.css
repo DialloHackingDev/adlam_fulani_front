@@ -1,48 +1,72 @@
 @import "tailwindcss";
 
-/* Configuration globale pour Adlam */
-* {
-  font-family: 'Noto Sans Adlam', 'Ebrima', 'Segoe UI Historic', sans-serif !important;
-  direction: rtl;
-  box-sizing: border-box;
-}
+/* Réinitialisations globales dans la couche base : les règles hors couche
+   l'emportent sur les utilitaires Tailwind v4 (max-w-*, h-* sur img, ...) */
+@layer base {
+  /* Configuration globale pour Adlam */
+  * {
+    box-sizing: border-box;
+  }
 
-/* Prévention débordement global */
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
-}
+  /* Le contenu des PDF (couche de texte du lecteur) garde ses propres polices
+     et sa direction : sinon sélection, copie et recherche sont décalées */
+  *:not(.rpv-core__viewer *) {
+    font-family: 'Noto Sans Adlam', 'Ebrima', 'Segoe UI Historic', sans-serif !important;
+  }
 
-#root {
-  overflow-x: hidden;
-  max-width: 100vw;
-}
+  /* Mise en page de gauche à droite ; chaque bloc de texte prend la direction
+     de son contenu : l'Adlam s'écrit de droite à gauche (comme l'arabe),
+     les emails, chiffres et textes latins de gauche à droite */
+  :is(h1, h2, h3, h4, h5, h6, p, label, li, dt, dd, blockquote, figcaption,
+  td, th, caption, legend, option, a, button, span, input, textarea, select):not(.rpv-core__viewer *) {
+    unicode-bidi: plaintext;
+  }
 
-/* Tous les conteneurs */
-.container, div, section, article, main {
-  max-width: 100%;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-}
+  /* Alignement uniforme : chaque texte suit l'alignement de son conteneur
+     (gauche par défaut, centré si le bloc l'est) au lieu de se coller à droite
+     dès qu'il est en Adlam. Les champs de saisie gardent l'alignement de la langue tapée. */
+  :is(h1, h2, h3, h4, h5, h6, p, label, li, dt, dd, blockquote, figcaption,
+  td, th, caption, legend, a, button, span):not(.rpv-core__viewer *) {
+    text-align: match-parent;
+  }
 
-/* Images responsive */
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
+  /* Prévention débordement global */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
 
-/* Vidéos et iframes responsive */
-iframe, video, embed, object {
-  max-width: 100%;
-  height: auto;
-}
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
 
-/* Tables responsive */
-table {
-  max-width: 100%;
-  overflow-x: auto;
-  display: block;
+  /* Tous les conteneurs */
+  .container, div, section, article, main {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+
+  /* Images responsive */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Vidéos et iframes responsive */
+  iframe, video, embed, object {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Tables responsive */
+  table {
+    max-width: 100%;
+    overflow-x: auto;
+    display: block;
+  }
 }
 
 /* Styles spécifiques pour les caractères Adlam */
@@ -58,11 +82,13 @@ table {
   text-orientation: mixed;
 }
 
-body {
-  direction: rtl;
-  text-align: right;
-  font-feature-settings: "kern" 1, "liga" 1;
-  font-family: 'Noto Sans Adlam', sans-serif !important;
+@layer base {
+  body {
+    /* Valeur absolue (et non 'start') : sinon chaque texte Adlam la résoudrait vers la droite */
+    text-align: left;
+    font-feature-settings: "kern" 1, "liga" 1;
+    font-family: 'Noto Sans Adlam', sans-serif !important;
+  }
 }
 
 /* Polices spécifiques */
@@ -131,6 +157,41 @@ body {
   animation: fadeIn 0.5s ease-out;
 }
 
+/* Écrans de connexion */
+@keyframes authEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes authShake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+.auth-enter {
+  animation: authEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-shake {
+  animation: authShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-enter,
+  .auth-shake {
+    animation: none;
+  }
+}
+
 /* Styles pour les boutons hover */
 .btn-hover-scale {
   transition: transform 0.2s ease-in-out;
@@ -173,21 +234,22 @@ body {
   @apply focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2;
 }
 
-/* Styles pour les inputs RTL */
-input[type="text"],
-input[type="search"],
-input[type="number"],
-textarea,
-select {
-  direction: rtl;
-  text-align: right;
-  font-family: 'Noto Sans Adlam', sans-serif !important;
-  unicode-bidi: plaintext;
-  text-rendering: optimizeLegibility;
-  font-feature-settings: "kern" 1, "liga" 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-variant-ligatures: common-ligatures;
+@layer base {
+  /* Styles pour les inputs RTL */
+  input[type="text"],
+  input[type="search"],
+  input[type="number"],
+  textarea,
+  select {
+    text-align: start;
+    font-family: 'Noto Sans Adlam', sans-serif !important;
+    unicode-bidi: plaintext;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-variant-ligatures: common-ligatures;
+  }
 }
 
 /* Corrections pour les icônes dans le contexte RTL */
@@ -280,16 +342,19 @@ select {
   }
 }
 
-/* Touch-friendly sur mobile */
-@media (max-width: 768px) {
-  button, a, input, select, textarea {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  /* Espacement touch-friendly */
-  .btn, .link {
-    padding: 0.75rem 1rem;
+/* Touch-friendly sur mobile (couche base : les tailles explicites des classes,
+   comme les points du carrousel, restent prioritaires) */
+@layer base {
+  @media (max-width: 768px) {
+    button, a, input, select, textarea {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* Espacement touch-friendly */
+    .btn, .link {
+      padding: 0.75rem 1rem;
+    }
   }
 }
 
@@ -298,4 +363,98 @@ select {
   .no-print {
     display: none !important;
   }
+}
+/* Corps des articles : typographie de lecture longue.
+   Propriétés logiques (inline-start) : correctes en Adlam (RTL) comme en français (LTR) */
+/* Tout l'article s'aligne selon sa langue principale (dir="auto"), pas paragraphe par paragraphe */
+.article-body:dir(ltr) { text-align: left; }
+.article-body:dir(rtl) { text-align: right; }
+
+.article-body {
+  font-size: 1.1875rem;
+  line-height: 1.85;
+  color: #1f2937;
+  overflow-wrap: break-word;
+}
+
+.article-body > * + * {
+  margin-top: 1.4em;
+}
+
+.article-body h1,
+.article-body h2,
+.article-body h3,
+.article-body h4 {
+  margin-top: 2em;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #111827;
+}
+
+.article-body h1 { font-size: 1.75em; }
+.article-body h2 { font-size: 1.45em; }
+.article-body h3 { font-size: 1.2em; }
+
+.article-body a {
+  color: #e11d48;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.article-body strong { font-weight: 700; color: #111827; }
+
+.article-body ul,
+.article-body ol {
+  padding-inline-start: 1.5em;
+}
+
+.article-body ul { list-style: disc; }
+.article-body ol { list-style: decimal; }
+.article-body li + li { margin-top: 0.5em; }
+
+.article-body blockquote {
+  border-inline-start: 4px solid #f43f5e;
+  padding-inline-start: 1.25em;
+  font-size: 1.1em;
+  font-style: italic;
+  color: #4b5563;
+}
+
+.article-body img,
+.article-body video {
+  width: 100%;
+  height: auto;
+  border-radius: 1rem;
+}
+
+.article-body iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border-radius: 1rem;
+}
+
+.article-body pre {
+  overflow-x: auto;
+  padding: 1.25em;
+  border-radius: 0.75rem;
+  background: #f3f4f6;
+  font-size: 0.85em;
+}
+
+.article-body table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.article-body th,
+.article-body td {
+  border: 1px solid #e5e7eb;
+  padding: 0.6em 0.9em;
+}
+
+@media (max-width: 640px) {
+  .article-body { font-size: 1.0625rem; }
 }

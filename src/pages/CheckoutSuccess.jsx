@@ -13,7 +13,7 @@ const CheckoutSuccess = () => {
 
     return (
         <div className="min-h-screen bg-white flex items-center justify-center px-4">
-            <div className="max-w-md w-full text-center" dir="rtl">
+            <div className="max-w-md w-full text-center">
                 {/* Success Icon */}
                 <div className="mb-8">
                     <HiCheckCircle className="h-24 w-24 text-green-500 mx-auto" />

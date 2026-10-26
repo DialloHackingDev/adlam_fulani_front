@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { HiCreditCard, HiLockClosed, HiCheckCircle } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../services/apiService';
+import { formatPrice as formatAdlamPrice } from '../utils/format';
 import { apiService } from '../services/apiService';
 
 const Checkout = () => {
@@ -18,13 +19,7 @@ const Checkout = () => {
     }, 0);
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('ar', {
-      style: 'currency',
-      currency: 'GNF',
-      minimumFractionDigits: 0
-    }).format(price);
-  };
+  const formatPrice = (price) => formatAdlamPrice(price);
 
   const handlePayment = async (e) => {
     e.preventDefault();
@@ -65,7 +60,7 @@ const Checkout = () => {
   if (paymentSuccess) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center" dir="rtl">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <HiCheckCircle className="h-12 w-12 text-green-600" />
           </div>
@@ -88,8 +83,8 @@ const Checkout = () => {
       <div className="max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Formulaire de paiement */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 lg:p-8" dir="rtl">
-            <div className="flex items-center space-x-3 space-x-reverse mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-6 lg:p-8">
+            <div className="flex items-center space-x-3 mb-6">
               <HiCreditCard className="h-8 w-8 text-black" />
               <h2 className="text-2xl font-bold">💳 𞤅𞤢𞤪𞤼𞤦𞤢𞤦𞤭𞤪𞤢𞤤</h2>
             </div>
@@ -159,7 +154,7 @@ const Checkout = () => {
                 className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-4 rounded-xl font-bold hover:from-gray-800 hover:to-black transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {processing ? (
-                  <span className="flex items-center justify-center space-x-2 space-x-reverse">
+                  <span className="flex items-center justify-center space-x-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                     <span>𞤔𞤢𞤪𞤭 𞤸𞤢𞤤𞤢𞤲𞤣𞤫...</span>
                   </span>
@@ -169,7 +164,7 @@ const Checkout = () => {
               </button>
 
               {/* Sécurité */}
-              <div className="flex items-center justify-center space-x-2 space-x-reverse text-sm text-gray-500">
+              <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
                 <HiLockClosed className="h-4 w-4" />
                 <span>𞤅𞤢𞤪𞤼𞤦𞤢𞤦𞤭𞤪𞤢𞤤 𞤅𞤢𞤪𞤣𞤭𞤲𞤢𞤤 256-bit SSL</span>
               </div>
@@ -178,7 +173,7 @@ const Checkout = () => {
 
           {/* Résumé de commande */}
           <div>
-            <div className="bg-white rounded-2xl shadow-lg p-6 lg:p-8 sticky top-24" dir="rtl">
+            <div className="bg-white rounded-2xl shadow-lg p-6 lg:p-8 sticky top-24">
               <h3 className="text-xl font-bold mb-6">📋 𞤅𞤢𞤪𞤼𞤭𞤪𞤢𞤤 𞤅𞤢𞤪𞤣𞤭𞤪𞤢𞤤</h3>
 
               <div className="space-y-4 mb-6">
@@ -188,7 +183,7 @@ const Checkout = () => {
                   const price = ebook.price || item.price || 0;
                   
                   return (
-                    <div key={item._id} className="flex items-center space-x-3 space-x-reverse py-3 border-b border-gray-100">
+                    <div key={item._id} className="flex items-center space-x-3 py-3 border-b border-gray-100">
                       <div className="w-12 h-16 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
                         {getImageUrl(ebook.coverImage) && (
                           <img src={getImageUrl(ebook.coverImage)} alt={title} className="w-full h-full object-cover" />
@@ -223,15 +218,15 @@ const Checkout = () => {
 
               {/* Badges de confiance */}
               <div className="mt-6 pt-6 border-t border-gray-100 space-y-3">
-                <div className="flex items-center space-x-2 space-x-reverse text-xs text-gray-600">
+                <div className="flex items-center space-x-2 text-xs text-gray-600">
                   <span>✅</span>
                   <span>𞤀𞤳𞤧𞤫𞤧 𞤭𞤲𞤧𞤼𞤢𞤲𞤼𞤢𞤲𞤫</span>
                 </div>
-                <div className="flex items-center space-x-2 space-x-reverse text-xs text-gray-600">
+                <div className="flex items-center space-x-2 text-xs text-gray-600">
                   <span>🔒</span>
                   <span>𞤅𞤢𞤪𞤼𞤦𞤢𞤦𞤭𞤪𞤢𞤤 𞤅𞤢𞤪𞤣𞤭𞤲𞤢𞤤</span>
                 </div>
-                <div className="flex items-center space-x-2 space-x-reverse text-xs text-gray-600">
+                <div className="flex items-center space-x-2 text-xs text-gray-600">
                   <span>💯</span>
                   <span>𞤘𞤢𞤪𞤢𞤲𞤼𞤭 100%</span>
                 </div>

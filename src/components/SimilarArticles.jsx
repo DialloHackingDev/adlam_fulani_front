@@ -46,7 +46,7 @@ const SimilarArticles = ({ categoryId, currentArticleId }) => {
   if (loading) {
     return (
       <div className="mt-12 pt-8 border-t border-gray-200">
-        <h3 className="text-2xl font-bold text-black mb-6" dir="rtl">
+        <h3 className="text-2xl font-bold text-black mb-6">
           𞤃𞤢𞤦𞤢𞤤𞤫 𞤸𞤮𞥄𞤤𞤭𞥄𞤲
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -69,11 +69,11 @@ const SimilarArticles = ({ categoryId, currentArticleId }) => {
   return (
     <div className="mt-12 pt-8 border-t border-gray-200">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-2xl font-bold text-black" dir="rtl">
+        <h3 className="text-2xl font-bold text-black">
           𞤃𞤢𞤦𞤢𞤤𞤫 𞤸𞤮𞥄𞤤𞤭𞥄𞤲
         </h3>
         
-        <div className="flex space-x-2 space-x-reverse">
+        <div className="flex space-x-2">
           <button
             className="similar-prev bg-white border border-gray-300 rounded-full p-2 hover:bg-gray-50 transition-colors"
             aria-label="Article précédent"
@@ -136,7 +136,7 @@ const SimilarArticles = ({ categoryId, currentArticleId }) => {
               </div>
 
               {/* Contenu */}
-              <div className="p-6" dir="rtl">
+              <div className="p-6">
                 {/* Catégorie */}
                 <div className="mb-3">
                   <span className="inline-block bg-black text-white text-xs px-2 py-1 rounded">
@@ -161,7 +161,7 @@ const SimilarArticles = ({ categoryId, currentArticleId }) => {
                   <span>
                     {formatDate(article.publishedAt || article.createdAt)}
                   </span>
-                  <div className="flex items-center space-x-3 space-x-reverse">
+                  <div className="flex items-center space-x-3">
                     <span className="flex items-center">
                       ❤️ {article.likes || 0}
                     </span>

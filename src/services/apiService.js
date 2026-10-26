@@ -25,6 +25,7 @@ export const getImageUrl = (imagePath) => {
 
 // Les uploads de PDF peuvent prendre bien plus que les 10 s par défaut
 const UPLOAD_TIMEOUT = 120000;
+const AUTH_TIMEOUT = 60000;
 
 // Instance axios avec configuration
 const apiClient = axios.create({
@@ -80,8 +81,9 @@ apiClient.interceptors.response.use(
 export const apiService = {
   // ==================== AUTH ====================
   auth: {
-    login: (credentials) => apiClient.post('/auth/login', credentials),
-    register: (userData) => apiClient.post('/auth/register', userData),
+    // Délai long : le serveur hébergé gratuitement peut mettre ~1 min à se réveiller
+    login: (credentials) => apiClient.post('/auth/login', credentials, { timeout: AUTH_TIMEOUT }),
+    register: (userData) => apiClient.post('/auth/register', userData, { timeout: AUTH_TIMEOUT }),
     logout: () => apiClient.post('/auth/logout'),
     getProfile: () => apiClient.get('/auth/me'),
   },
@@ -208,7 +210,7 @@ export const apiService = {
 
   // ==================== COMMENTS ====================
   comments: {
-    getByArticle: (articleId) => apiClient.get(`/comments/article/${articleId}`),
+    getByArticle: (articleId, params = {}) => apiClient.get(`/comments/article/${articleId}`, { params }),
     getReplies: (commentId) => apiClient.get(`/comments/${commentId}/replies`),
     create: (commentData) => apiClient.post('/comments', commentData),
     update: (id, commentData) => apiClient.patch(`/comments/${id}`, commentData),

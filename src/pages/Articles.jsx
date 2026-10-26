@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import ArticleCard from '../components/ArticleCard';
 import ArticlesBanner from '../components/ArticlesBanner';
 import { apiService } from '../services/apiService';
@@ -6,12 +7,17 @@ import { apiService } from '../services/apiService';
 const Articles = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // Catégorie dans l'URL (?category=histoire) : liens du pied de page et partage
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCategory = searchParams.get('category') || 'all';
+  const setSelectedCategory = (category) => {
+    setSearchParams(category === 'all' ? {} : { category }, { replace: true });
+  };
 
   const categories = [
     { id: 'all', name: '𞤊𞤮𞤪𞤪𞤫 𞤃𞤢𞤦𞤢𞤤𞤫' },
-    { id: 'literature', name: '𞤀𞤣𞤢𞤦𞤢𞤲' },
-    { id: 'history', name: '𞤚𞤢𞤪𞤭𞤲𞤢𞤤' },
+    { id: 'litterature', name: '𞤀𞤣𞤢𞤦𞤢𞤲' },
+    { id: 'histoire', name: '𞤚𞤢𞤪𞤭𞤲𞤢𞤤' },
     { id: 'education', name: '𞤔𞤢𞤲𞤺𞤢𞤤' },
     { id: 'culture', name: '𞤅𞤢𞤲𞤣𞤭𞤲𞤢𞤤' },
     { id: 'science', name: '𞤅𞤢𞤲𞤣𞤢𞤲𞤣𞤭' },
@@ -46,7 +52,7 @@ const Articles = () => {
       {/* Header */}
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
-          <div className="text-center" dir="rtl">
+          <div className="text-center">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-3 sm:mb-4">📰 𞤃𞤢𞤦𞤢𞤤𞤫</h1>
             <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-4">
               𞤑𞤮𞤲𞤣𞤭𞤣𞤢𞤲 𞤊𞤮𞤲𞤣𞤭 𞤃𞤢𞤦𞤢𞤤𞤫 𞤅𞤢𞤲𞤣𞤭𞤲𞤢𞤤 𞤫 𞤔𞤢𞤲𞤺𞤢𞤤 𞤫 𞤕𞤮𞤤𞤢𞤲𞤭
@@ -57,7 +63,7 @@ const Articles = () => {
 
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
         {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-2 mb-6 sm:mb-8 px-2" dir="rtl">
+        <div className="flex flex-wrap justify-center gap-2 mb-6 sm:mb-8 px-2">
           {categories.map((category) => (
             <button
               key={category.id}
@@ -94,7 +100,7 @@ const Articles = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 sm:py-12 px-4" dir="rtl">
+          <div className="text-center py-8 sm:py-12 px-4">
             <div className="text-gray-400 text-4xl sm:text-6xl mb-4">📰</div>
             <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
               𞤅𞤢𞤲𞤣𞤭 𞤃𞤢𞤦𞤢𞤤𞤫 𞤫 𞤊𞤮𞤲𞤣𞤭 𞤫𞤲𞤭

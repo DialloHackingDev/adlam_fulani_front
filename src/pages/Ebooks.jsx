@@ -95,7 +95,7 @@ const Ebooks = () => {
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-black to-gray-800 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center" dir="rtl">
+          <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               𞤃𞤫𞤧𞤫 𞤀𞤣𞤤𞤢𞤥
             </h1>
@@ -113,7 +113,6 @@ const Ebooks = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full py-4 pr-12 pl-6 text-black rounded-full text-lg focus:outline-none focus:ring-4 focus:ring-white/20"
-                  dir="rtl"
                 />
               </div>
             </div>
@@ -125,7 +124,7 @@ const Ebooks = () => {
       {featuredEbooks.length > 0 && (
         <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-12" dir="rtl">
+            <div className="flex items-center justify-between mb-12">
               <div>
                 <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
                   𞤃𞤫𞤧𞤫 𞤑𞤫𞤧𞤢𞤲𞤣𞤫
@@ -134,13 +133,13 @@ const Ebooks = () => {
                   𞤃𞤫𞤧𞤫 𞤃𞤢𞤳 𞤸𞤢𞤤𞤢𞤲 𞤫 𞤅𞤢𞤭𞤼 𞤲𞤣𞤫𞤲
                 </p>
               </div>
-              <div className="flex items-center space-x-2 space-x-reverse">
+              <div className="flex items-center space-x-2">
                 <HiStar className="h-6 w-6 text-yellow-500" />
                 <span className="text-sm text-gray-600">𞤑𞤫𞤧𞤢𞤲𞤣𞤫</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {featuredEbooks.map((ebook) => (
                 <EbookCard key={ebook._id} ebook={ebook} featured />
               ))}
@@ -154,7 +153,7 @@ const Ebooks = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             {/* Categories */}
-            <div className="flex flex-wrap gap-3" dir="rtl">
+            <div className="flex flex-wrap gap-3">
               {categories.map((category) => (
                 <button
                   key={category.id}
@@ -171,14 +170,13 @@ const Ebooks = () => {
             </div>
 
             {/* Sort Options */}
-            <div className="flex items-center space-x-4 space-x-reverse">
-              <span className="text-sm text-gray-600" dir="rtl">𞤪𞤢𞤦𞤢𞤲:</span>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">𞤪𞤢𞤦𞤢𞤲:</span>
               <div className="relative">
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                  dir="rtl"
                 >
                   {sortOptions.map((option) => (
                     <option key={option.id} value={option.id}>
@@ -197,7 +195,7 @@ const Ebooks = () => {
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {[...Array(12)].map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="bg-gray-200 aspect-[3/4] rounded-lg mb-4"></div>
@@ -211,7 +209,7 @@ const Ebooks = () => {
             </div>
           ) : filteredEbooks.length > 0 ? (
             <>
-              <div className="flex items-center justify-between mb-8" dir="rtl">
+              <div className="flex items-center justify-between mb-8">
                 <h3 className="text-2xl font-bold text-black">
                   {selectedCategory === 'all' ? '𞤊𞤮𞤪𞤪𞤫 𞤃𞤫𞤧𞤫' : categories.find(c => c.id === selectedCategory)?.name}
                 </h3>
@@ -220,7 +218,7 @@ const Ebooks = () => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 {filteredEbooks.map((ebook) => (
                   <EbookCard key={ebook._id} ebook={ebook} />
                 ))}
@@ -229,10 +227,10 @@ const Ebooks = () => {
           ) : (
             <div className="text-center py-16">
               <HiBookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-500 mb-2" dir="rtl">
+              <h3 className="text-xl font-semibold text-gray-500 mb-2">
                 𞤀𞤤𞤢 𞤃𞤫𞤧𞤫 𞤧𞤢𞤦𞤢𞤲𞤢𞤲
               </h3>
-              <p className="text-gray-400" dir="rtl">
+              <p className="text-gray-400">
                 {searchTerm ? '𞤧𞤵𞤦𞤮 𞤺𞤮𞤤𞤤𞤮 𞤧𞤢𞤦𞤢𞤲𞤢𞤲' : '𞤃𞤫𞤧𞤫 𞤸𞤢𞤤 𞤸𞤫𞤧𞤮𞤲𞤣𞤫'}
               </p>
             </div>
@@ -242,7 +240,7 @@ const Ebooks = () => {
 
       {/* CTA Section */}
       <section className="py-16 bg-black text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center" dir="rtl">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             𞤸𞤢𞤤 𞤸𞤫𞤧𞤮𞤲𞤣𞤫 𞤃𞤫𞤧𞤮 𞤃𞤢𞤦𞤮?
           </h2>

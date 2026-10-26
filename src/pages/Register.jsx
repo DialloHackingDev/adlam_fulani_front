@@ -57,7 +57,7 @@ const Register = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
-        <div className="text-center" dir="rtl">
+        <div className="text-center">
           <h2 className="text-4xl font-bold text-black mb-2">
             𞤅𞤮𞤧𞤢𞤲 𞤸𞤢𞤧𞤢𞤦
           </h2>
@@ -77,7 +77,7 @@ const Register = () => {
 
             {/* Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                 𞤋𞤲𞤣𞤫 𞤃𞤢𞤦𞤮
               </label>
               <div className="relative">
@@ -93,14 +93,13 @@ const Register = () => {
                   onChange={handleChange}
                   className="appearance-none relative block w-full pr-10 pl-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent focus:z-10"
                   placeholder="𞤋𞤲𞤣𞤫 𞤃𞤢𞤦𞤮"
-                  dir="rtl"
                 />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 𞤄𞤢𞤪𞤭𞤣 𞤉𞤤𞤫𞤳𞤼𞤮𞤪𞤮𞤲𞤭𞤳
               </label>
               <div className="relative">
@@ -122,7 +121,7 @@ const Register = () => {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 𞤑𞤮𞤣 𞤅𞤭𞤪𞤭
               </label>
               <div className="relative">
@@ -155,7 +154,7 @@ const Register = () => {
 
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                 𞤚𞤢𞤧𞤣𞤭𞤲 𞤑𞤮𞤣 𞤅𞤭𞤪𞤭
               </label>
               <div className="relative">
@@ -196,10 +195,10 @@ const Register = () => {
                 {loading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    <span dir="rtl">𞤔𞤢𞤪𞤭 𞤸𞤢𞤤𞤢𞤲𞤣𞤫...</span>
+                    <span>𞤔𞤢𞤪𞤭 𞤸𞤢𞤤𞤢𞤲𞤣𞤫...</span>
                   </div>
                 ) : (
-                  <span dir="rtl">𞤅𞤮𞤧𞤢𞤲 𞤸𞤢𞤧𞤢𞤦</span>
+                  <span>𞤅𞤮𞤧𞤢𞤲 𞤸𞤢𞤧𞤢𞤦</span>
                 )}
               </button>
             </div>
@@ -210,7 +209,6 @@ const Register = () => {
                 <Link
                   to="/login"
                   className="text-black hover:text-gray-600 transition-colors font-medium"
-                  dir="rtl"
                 >
                   𞤸𞤫𞤧𞤮 𞤸𞤢𞤧𞤢𞤦 𞤸𞤢𞤤𞤢? 𞤔𞤮𞤲𞤲𞤣𞤭 𞤸𞤢𞤧𞤢
                 </Link>
@@ -219,7 +217,6 @@ const Register = () => {
                 <Link
                   to="/"
                   className="text-gray-500 hover:text-gray-700 transition-colors text-sm"
-                  dir="rtl"
                 >
                   𞤪𞤵𞤼𞤢𞤲 𞤫 𞤀𞤧𞤵𞤤
                 </Link>
@@ -230,7 +227,7 @@ const Register = () => {
 
         {/* Info */}
         <div className="text-center">
-          <p className="text-sm text-gray-600" dir="rtl">
+          <p className="text-sm text-gray-600">
             𞤅𞤮𞤧𞤢𞤲 𞤸𞤢𞤧𞤢𞤦 𞤫 𞤑𞤢𞤪𞤢𞤲 𞤃𞤫𞤧𞤫 𞤫 𞤧𞤢𞤴𞤢𞤲 𞤃𞤫𞤧𞤫 𞤀𞤣𞤤𞤢𞤥
           </p>
         </div>

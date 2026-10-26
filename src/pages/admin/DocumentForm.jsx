@@ -133,7 +133,7 @@ const DocumentForm = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8" dir="rtl">
+        <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-black">
               {isEdit ? '𞤻𞤫𞤪𞤲𞤣𞤫 𞤃𞤢𞤦𞤢𞤤 𞤚𞤢𞤪𞤭𞤲𞤢𞤤' : '𞤃𞤢𞤦𞤢𞤤 𞤚𞤢𞤪𞤭𞤲𞤢𞤤 𞤑𞤫𞤧𞤮'}
@@ -153,7 +153,7 @@ const DocumentForm = () => {
 
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 space-y-6">
           {/* Title */}
-          <div dir="rtl">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               𞤀𞤪𞤣𞤫 𞤃𞤢𞤦𞤢𞤤 *
             </label>
@@ -165,12 +165,11 @@ const DocumentForm = () => {
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-right"
               placeholder="𞤀𞤪𞤣𞤫 𞤃𞤢𞤦𞤢𞤤 𞤲𞤣𞤫..."
-              dir="rtl"
             />
           </div>
 
           {/* Description */}
-          <div dir="rtl">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               𞤅𞤢𞤪𞤣𞤫 𞤃𞤢𞤦𞤢𞤤
             </label>
@@ -181,12 +180,11 @@ const DocumentForm = () => {
               rows={4}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-right"
               placeholder="𞤅𞤢𞤪𞤣𞤫 𞤃𞤢𞤦𞤢𞤤 𞤲𞤣𞤫..."
-              dir="rtl"
             />
           </div>
 
           {/* File Upload */}
-          <div dir="rtl">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               𞤊𞤢𞤴𞤤 𞤃𞤢𞤦𞤢𞤤 *
             </label>
@@ -215,7 +213,7 @@ const DocumentForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Category */}
-            <div dir="rtl">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 𞤊𞤮𞤪𞤲𞤣𞤫 *
               </label>
@@ -225,7 +223,6 @@ const DocumentForm = () => {
                 onChange={handleInputChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-right"
-                dir="rtl"
               >
                 <option value="">𞤊𞤮𞤪𞤲𞤣𞤫 𞤧𞤵𞤦𞤮...</option>
                 {categories.map(cat => (
@@ -235,7 +232,7 @@ const DocumentForm = () => {
             </div>
 
             {/* Tags */}
-            <div dir="rtl">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 𞤚𞤢𞤺𞤫 (𞤧𞤢𞤪𞤢𞤲 𞤫 𞤳𞤮𞤥𞤢)
               </label>
@@ -246,13 +243,12 @@ const DocumentForm = () => {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-right"
                 placeholder="𞤚𞤢𞤺 1, 𞤚𞤢𞤺 2, 𞤚𞤢𞤺 3..."
-                dir="rtl"
               />
             </div>
           </div>
 
           {/* Options */}
-          <div className="flex space-x-6 space-x-reverse" dir="rtl">
+          <div className="flex space-x-6">
             <div className="flex items-center">
               <input
                 type="checkbox"

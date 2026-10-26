@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { HiTrash, HiShoppingBag, HiArrowLeft } from 'react-icons/hi';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/CartContext';import { formatPrice as formatAdlamPrice } from '../utils/format';
+
 import { getImageUrl } from '../services/apiService';
 
 const Cart = () => {
@@ -11,13 +12,7 @@ const Cart = () => {
     fetchCart();
   }, []);
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('ar', {
-      style: 'currency',
-      currency: 'GNF',
-      minimumFractionDigits: 0
-    }).format(price);
-  };
+  const formatPrice = (price) => formatAdlamPrice(price);
 
   const calculateTotal = () => {
     return items.reduce((total, item) => {
@@ -36,7 +31,7 @@ const Cart = () => {
               <div className="lg:col-span-2 space-y-4">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
-                    <div className="flex items-center space-x-4 space-x-reverse">
+                    <div className="flex items-center space-x-4">
                       <div className="w-16 h-20 sm:w-20 sm:h-28 bg-gray-200 rounded-lg"></div>
                       <div className="flex-1 space-y-2 sm:space-y-3">
                         <div className="h-4 sm:h-5 bg-gray-200 rounded w-3/4"></div>
@@ -70,7 +65,7 @@ const Cart = () => {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
           {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 space-x-reverse text-sm mb-6 sm:mb-8" dir="rtl">
+          <nav className="flex items-center space-x-2 text-sm mb-6 sm:mb-8">
             <Link to="/" className="text-gray-500 hover:text-black transition-colors">
               𞤀𞤧𞤵𞤤
             </Link>
@@ -83,17 +78,16 @@ const Cart = () => {
               <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <HiShoppingBag className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4" dir="rtl">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
                 𞤅𞤢𞤪𞤼𞤭𞤪𞤢𞤤 𞤊𞤢𞤪𞤭
               </h2>
-              <p className="text-gray-500 mb-8 text-sm sm:text-base" dir="rtl">
+              <p className="text-gray-500 mb-8 text-sm sm:text-base">
                 𞤅𞤢𞤪𞤣𞤭 𞤼𞤭𞤪𞤭𞤣𞤢𞤪 𞤣𞤫𞤬𞤼𞤫 𞤫 𞤅𞤢𞤪𞤼𞤭𞤪𞤢𞤤 𞤫𞤪𞤭
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                 <Link
                   to="/ebooks"
                   className="inline-flex items-center justify-center bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg"
-                  dir="rtl"
                 >
                   <HiArrowLeft className="h-5 w-5 ml-2" />
                   𞤅𞤢𞤦𞤼𞤮 𞤔𞤢𞤲𞤺𞤮𞤤
@@ -101,7 +95,6 @@ const Cart = () => {
                 <Link
                   to="/articles"
                   className="inline-flex items-center justify-center border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-                  dir="rtl"
                 >
                   𞤃𞤢𞤦𞤢𞤤𞤫 𞤴𞤮𞤪𞤢𞤲
                 </Link>
@@ -117,7 +110,7 @@ const Cart = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 space-x-reverse text-sm mb-6 sm:mb-8" dir="rtl">
+        <nav className="flex items-center space-x-2 text-sm mb-6 sm:mb-8">
           <Link to="/" className="text-gray-500 hover:text-black transition-colors">
             𞤀𞤧𞤵𞤤
           </Link>
@@ -126,7 +119,7 @@ const Cart = () => {
         </nav>
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 gap-4" dir="rtl">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-2">
               🛍️ 𞤅𞤢𞤪𞤼𞤭𞤪𞤢𞤤 𞤅𞤢𞤪𞤣𞤭𞤪𞤢𞤤
@@ -138,7 +131,7 @@ const Cart = () => {
           {items.length > 0 && (
             <button
               onClick={clearCart}
-              className="flex items-center space-x-2 space-x-reverse text-red-600 hover:text-red-800 hover:bg-red-50 px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium"
+              className="flex items-center space-x-2 text-red-600 hover:text-red-800 hover:bg-red-50 px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium"
             >
               <HiTrash className="h-4 w-4" />
               <span>𞤊𞤭𞤼𞤢𞤪 𞤅𞤢𞤪𞤼𞤭𞤪𞤢𞤤</span>
@@ -163,7 +156,7 @@ const Cart = () => {
                     key={item._id || item.ebookId}
                     className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
                   >
-                    <div className="flex items-start space-x-4 space-x-reverse" dir="rtl">
+                    <div className="flex items-start space-x-4">
                       {/* Book Cover */}
                       <div className="flex-shrink-0">
                         <div className="w-16 h-20 sm:w-20 sm:h-28 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
@@ -198,7 +191,7 @@ const Cart = () => {
                         </p>
                         
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                          <div className="flex items-center space-x-3 space-x-reverse">
+                          <div className="flex items-center space-x-3">
                             <span className="text-lg sm:text-xl font-bold text-black">
                               {formatPrice(price)}
                             </span>
@@ -209,7 +202,7 @@ const Cart = () => {
                             )}
                           </div>
                           
-                          <div className="flex items-center space-x-3 space-x-reverse">
+                          <div className="flex items-center space-x-3">
                             <span className="text-xs sm:text-sm text-gray-500">
                               𞤀𞤣𞤢𞤪𞤭: {item.quantity}
                             </span>
@@ -239,7 +232,7 @@ const Cart = () => {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 sticky top-24" dir="rtl">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 sticky top-24">
               <h3 className="text-lg sm:text-xl font-bold text-black mb-4 sm:mb-6 flex items-center">
                 📋 𞤅𞤢𞤪𞤼𞤭𞤪𞤢𞤤 𞤅𞤢𞤪𞤣𞤭𞤪𞤢𞤤
               </h3>
@@ -281,7 +274,7 @@ const Cart = () => {
 
               {/* Security Badge */}
               <div className="mt-6 pt-4 border-t border-gray-100">
-                <div className="flex items-center justify-center space-x-2 space-x-reverse text-xs text-gray-500">
+                <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
                   <span>🔒</span>
                   <span>𞤅𞤢𞤪𞤼𞤦𞤢𞤦𞤭𞤪𞤢𞤤 𞤅𞤢𞤪𞤣𞤭𞤲𞤢𞤤</span>
                 </div>

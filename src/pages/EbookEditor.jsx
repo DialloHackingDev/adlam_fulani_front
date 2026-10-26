@@ -201,12 +201,9 @@ const EbookEditor = () => {
       }
       
       // Tags et keywords en string séparés par virgules
-      if (formData.tags.length > 0) {
-        submitData.append('tags', formData.tags.join(','));
-      }
-      if (formData.keywords.length > 0) {
-        submitData.append('keywords', formData.keywords.join(','));
-      }
+      // Toujours envoyés : une liste vide efface les anciennes étiquettes
+      submitData.append('tags', formData.tags.join(','));
+      submitData.append('keywords', formData.keywords.join(','));
 
       let response;
       if (isEditing) {
@@ -255,19 +252,19 @@ const EbookEditor = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
-          <div className="flex items-center space-x-3 sm:space-x-4 space-x-reverse">
+          <div className="flex items-center space-x-3 sm:space-x-4">
             <button
               onClick={() => navigate('/admin')}
               className="p-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
             >
               <HiArrowLeft className="h-5 w-5" />
             </button>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900" dir="rtl">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
               {isEditing ? '𞤃𞤫𞤧𞤫 𞤆𞤢𞤴𞤭' : '𞤃𞤫𞤧𞤫 𞤚𞤢𞤥𞤭'}
             </h1>
           </div>
           
-          <div className="flex items-center space-x-2 sm:space-x-3 space-x-reverse">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <button
               onClick={() => handleSave('draft')}
               disabled={saving}
@@ -281,7 +278,7 @@ const EbookEditor = () => {
             <button
               onClick={() => handleSave('published')}
               disabled={saving}
-              className="flex items-center px-3 sm:px-4 py-2 text-sm sm:text-base bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="flex items-center px-3 sm:px-4 py-2 text-sm sm:text-base bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
             >
               <HiEye className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">{saving ? '𞤔𞤢𞤪𞤭...' : '𞤆𞤢𞤦𞤤𞤭𞤧'}</span>
@@ -295,13 +292,13 @@ const EbookEditor = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Info */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4" dir="rtl">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 𞤋𞤲𞤬𞤮 𞤄𞤢𞤧𞤭𞤳
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     𞤚𞤢𞤦𞤭 𞤃𞤫𞤧𞤫
                   </label>
                   <AdlamInput
@@ -309,13 +306,13 @@ const EbookEditor = () => {
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                     placeholder="𞤖𞤢𞤤𞤢𞤲𞤣𞤫 𞤚𞤢𞤦𞤭 𞤃𞤫𞤧𞤫..."
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     𞤅𞤢𞤪𞤣𞤭𞤪𞤢𞤤
                   </label>
                   <AdlamInput
@@ -323,14 +320,14 @@ const EbookEditor = () => {
                     name="author"
                     value={formData.author}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                     placeholder="𞤖𞤢𞤤𞤢𞤲𞤣𞤫 𞤅𞤢𞤪𞤣𞤭𞤪𞤢𞤤..."
                   />
                 </div>
               </div>
               
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   𞤗𞤫𞤧𞤳𞤪𞤭𞤪𞤼𞤭𞤮𞤲
                 </label>
                 <AdlamTextarea
@@ -338,7 +335,7 @@ const EbookEditor = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                   placeholder="𞤖𞤢𞤤𞤢𞤲𞤣𞤫 𞤗𞤫𞤧𞤳𞤪𞤭𞤪𞤼𞤭𞤮𞤲 𞤃𞤫𞤧𞤫..."
                 />
               </div>
@@ -346,14 +343,14 @@ const EbookEditor = () => {
 
             {/* Files Upload */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4" dir="rtl">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 𞤊𞤢𞤴𞤤𞤫 𞤀𞤨𞤤𞤮𞤣
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Cover Image */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     𞤐𞤢𞤼𞤢𞤤 𞤑𞤢𞤾𞤢
                   </label>
                   {coverPreview && (
@@ -383,12 +380,12 @@ const EbookEditor = () => {
 
                 {/* PDF File */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     𞤊𞤢𞤴𞤤 PDF
                   </label>
                   {pdfPreview && (
-                    <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                      <p className="text-sm text-blue-800" dir="rtl">
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-900">
                         📄 {pdfPreview}
                       </p>
                     </div>
@@ -416,20 +413,20 @@ const EbookEditor = () => {
           <div className="space-y-6">
             {/* Settings */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4" dir="rtl">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 𞤅𞤫𞤼𞤭𞤲𞤺 𞤃𞤫𞤧𞤫
               </h3>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     𞤅𞤼𞤢𞤼𞤵𞤧
                   </label>
                   <select
                     name="status"
                     value={formData.status}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                   >
                     <option value="draft">𞤃𞤪𞤢𞤬𞤼</option>
                     <option value="published">𞤆𞤢𞤦𞤤𞤭𞤧</option>
@@ -437,14 +434,14 @@ const EbookEditor = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     𞤑𞤢𞤼𞤫𞤺𞤮𞤪𞤭
                   </label>
                   <select
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                   >
                     {categories.map((cat) => (
                       <option key={cat.value} value={cat.value}>
@@ -455,14 +452,14 @@ const EbookEditor = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     𞤂𞤢𞤲𞤺𞤢𞤤
                   </label>
                   <select
                     name="language"
                     value={formData.language}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                   >
                     {languages.map((lang) => (
                       <option key={lang.value} value={lang.value}>
@@ -473,7 +470,7 @@ const EbookEditor = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     𞤅𞤢𞤪𞤼𞤭𞤪𞤢𞤤 (GNF)
                   </label>
                   <input
@@ -482,7 +479,7 @@ const EbookEditor = () => {
                     value={formData.price}
                     onChange={handleInputChange}
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
 
@@ -492,9 +489,9 @@ const EbookEditor = () => {
                     name="featured"
                     checked={formData.featured}
                     onChange={handleInputChange}
-                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-gray-900 focus:ring-black border-gray-300 rounded"
                   />
-                  <label className="mr-2 text-sm text-gray-700" dir="rtl">
+                  <label className="mr-2 text-sm text-gray-700">
                     𞤃𞤫𞤧𞤫 𞤊𞤫𞤤𞤢𞤲
                   </label>
                 </div>
@@ -503,23 +500,23 @@ const EbookEditor = () => {
 
             {/* Tags */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4" dir="rtl">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 𞤚𞤢𞤺𞤫
               </h3>
               
               <div className="space-y-3">
-                <div className="flex space-x-2 space-x-reverse">
+                <div className="flex space-x-2">
                   <AdlamInput
                     type="text"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                     placeholder="𞤚𞤢𞤺 𞤚𞤢𞤥𞤭..."
                   />
                   <button
                     onClick={addTag}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
                   >
                     +
                   </button>
@@ -529,12 +526,12 @@ const EbookEditor = () => {
                   {formData.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full"
+                      className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-900 text-sm rounded-full"
                     >
                       {tag}
                       <button
                         onClick={() => removeTag(tag)}
-                        className="ml-2 text-green-600 hover:text-green-800"
+                        className="ml-2 text-gray-900 hover:text-black"
                       >
                         ×
                       </button>

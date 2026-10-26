@@ -1,165 +1,87 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { HiArrowLeft, HiDownload, HiZoomIn, HiZoomOut, HiX } from 'react-icons/hi';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { apiService } from '../services/apiService';
-import PDFViewer from '../components/PDFViewer';
+import BookReader from '../components/BookReader';
+import { saveBook, loadBook } from '../utils/offlineStore';
+
+// Messages adaptés aux erreurs d'accès au fichier
+const describeError = (error) => {
+  const status = error.response?.status;
+  if (status === 401) return 'Votre session a expiré. Reconnectez-vous pour continuer la lecture.';
+  if (status === 403) return 'Vous n\'avez pas accès à ce livre. Achetez-le ou ajoutez-le à votre bibliothèque.';
+  if (status === 404) return 'Ce livre est introuvable.';
+  if (!error.response) return 'Connexion impossible. Vérifiez votre réseau puis réessayez.';
+  return 'Impossible d\'ouvrir ce livre.';
+};
 
 const EbookReader = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [ebook, setEbook] = useState(null);
-  const [pdfUrl, setPdfUrl] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Vérifier que l'utilisateur est connecté
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login', { state: { from: `/ebook-reader/${id}` } });
+    if (!localStorage.getItem('token')) {
+      navigate('/login', { replace: true, state: { from: `/ebook-reader/${id}` } });
       return;
     }
-    
-    fetchEbookAndPdf();
+    apiService.ebooks.getById(id)
+      .then(res => setEbook(res.data.data.ebook))
+      .catch(() => setEbook({ title: '' }));
   }, [id, navigate]);
 
-  const fetchEbookAndPdf = async () => {
+  // Télécharge le PDF via l'API (qui vérifie l'achat) en suivant la progression
+  const loadPdf = useCallback(async (onProgress) => {
     try {
-      setLoading(true);
-      
-      // Récupérer les infos de l'ebook
-      const ebookResponse = await apiService.ebooks.getById(id);
-      const ebookData = ebookResponse.data.data?.ebook || ebookResponse.data.ebook || ebookResponse.data;
-      setEbook(ebookData);
-      
-      // Le PDF est toujours servi par le backend, qui vérifie l'achat
-      setPdfUrl(apiService.ebooks.stream(id));
-      
+      const response = await axios.get(apiService.ebooks.stream(id), {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        responseType: 'arraybuffer',
+        timeout: 120000,
+        onDownloadProgress: (e) => e.total && onProgress(e.loaded / e.total)
+      });
+      onProgress(1);
+      // Copie conservée sur l'appareil pour la lecture hors connexion
+      saveBook(id, response.data.slice(0));
+      return response.data;
     } catch (error) {
-      if (error.response?.status === 403) {
-        setError('Vous n\'avez pas accès à ce livre');
-      } else {
-        setError('Impossible de charger le livre');
+      // Sans réseau : lire la copie locale si le livre a déjà été ouvert
+      if (!error.response) {
+        const offlineCopy = await loadBook(id);
+        if (offlineCopy) {
+          onProgress(1);
+          return offlineCopy;
+        }
+        error.userMessage = 'Ce livre n\'est pas encore disponible hors connexion. Ouvrez-le une fois avec internet pour le garder sur cet appareil.';
+        throw error;
       }
-    } finally {
-      setLoading(false);
+      error.userMessage = describeError(error);
+      throw error;
     }
-  };
+  }, [id]);
 
   const handleDownload = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(apiService.ebooks.stream(id), {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (!response.ok) throw new Error('Erreur de téléchargement');
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${ebook.title}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const data = await loadPdf(() => {});
+      const url = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${ebook?.title || 'livre'}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
     } catch (error) {
-      alert('Impossible de télécharger le fichier');
+      alert(error.userMessage || 'Téléchargement impossible');
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white">𞤔𞤢𞤪𞤭 𞤸𞤢𞤤𞤢𞤲𞤣𞤫...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !ebook) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="text-2xl font-bold mb-4">𞤃𞤫𞤧𞤮 𞤧𞤢𞤦𞤢𞤲𞤢𞤲</h2>
-          <p className="mb-6">{error}</p>
-          <Link
-            to="/my-library"
-            className="inline-flex items-center px-6 py-3 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <HiArrowLeft className="h-5 w-5 ml-2" />
-            𞤪𞤵𞤼𞤢𞤲 𞤫 𞤄𞤭𞤦𞤤𞤭𞤮𞤼𞤫𞤳
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-900">
-      {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4 space-x-reverse" dir="rtl">
-              <button
-                onClick={() => navigate('/my-library')}
-                className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <HiArrowLeft className="h-6 w-6" />
-              </button>
-              <div>
-                <h1 className="text-lg sm:text-xl font-bold text-white line-clamp-1">
-                  {ebook.title}
-                </h1>
-                <p className="text-sm text-gray-400">
-                  {ebook.author || '𞤅𞤢𞤲𞤣𞤭𞤲𞤢𞤤 𞤀𞤣𞤤𞤢𞤥'}
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <button
-                onClick={handleDownload}
-                className="hidden sm:flex items-center px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                <HiDownload className="h-5 w-5 ml-2" />
-                <span>𞤚𞤫𞤤𞤫𞤧𞤢𞤪𞤶𞤫</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* PDF Viewer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
-          {pdfUrl ? (
-            <PDFViewer
-              pdfUrl={pdfUrl}
-              watermarkText=""
-              showWatermark={false}
-              allowDownload={true}
-              maxPages={null}
-            />
-          ) : (
-            <div className="p-12 text-center">
-              <p className="text-gray-600 mb-4">𞤊𞤭𞤼𞤢𞤦 𞤧𞤢𞤦𞤢𞤲𞤢𞤲</p>
-              <Link
-                to="/my-library"
-                className="inline-flex items-center px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-              >
-                <HiArrowLeft className="h-5 w-5 ml-2" />
-                𞤪𞤵𞤼𞤢𞤲
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    <BookReader
+      bookId={id}
+      title={ebook?.title || ''}
+      author={ebook?.author}
+      loadPdf={loadPdf}
+      onBack={() => navigate('/my-library')}
+      onDownload={handleDownload}
+    />
   );
 };
 

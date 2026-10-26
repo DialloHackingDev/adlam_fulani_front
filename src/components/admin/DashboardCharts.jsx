@@ -198,7 +198,7 @@ const DashboardCharts = ({ stats, viewsData, revenueData, trafficData }) => {
   };
 
   return (
-    <div className="space-y-8" dir="rtl">
+    <div className="space-y-8">
       {/* Première ligne: Vues et Revenus */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">

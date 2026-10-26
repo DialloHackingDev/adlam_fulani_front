@@ -8,9 +8,11 @@ const frenchToAdlam = {
 
 const RichTextEditor = ({ value, onChange, placeholder = "𞤖𞤢𞤤𞤢𞤲𞤣𞤫 𞤲𞤣𞤫...", className = "" }) => {
   const editorRef = useRef(null);
+  // Dernier contenu envoyé au parent : permet de distinguer nos propres frappes
+  // d'un changement venu de l'extérieur (chargement d'un article à modifier)
+  const lastEmittedRef = useRef(null);
   const [selectedFont, setSelectedFont] = useState('Noto Sans Adlam');
   const [fontSize, setFontSize] = useState('16');
-  const [isUpdating, setIsUpdating] = useState(false);
 
   const fonts = [
     { name: 'Noto Sans Adlam', value: 'Noto Sans Adlam, sans-serif' },
@@ -21,11 +23,16 @@ const RichTextEditor = ({ value, onChange, placeholder = "𞤖𞤢𞤤𞤢𞤲�
 
   const fontSizes = ['12', '14', '16', '18', '20', '24', '28', '32'];
 
+  // Réécrire le contenu uniquement s'il change de l'extérieur : le faire pendant la
+  // saisie remettait le curseur au début du texte
   useEffect(() => {
-    if (editorRef.current && !isUpdating && editorRef.current.innerHTML !== value) {
-      editorRef.current.innerHTML = value || '';
+    const editor = editorRef.current;
+    if (!editor || value === lastEmittedRef.current) return;
+    if (editor.innerHTML !== (value || '')) {
+      editor.innerHTML = value || '';
     }
-  }, [value, isUpdating]);
+    lastEmittedRef.current = value;
+  }, [value]);
 
   const executeCommand = (command, value = null) => {
     document.execCommand(command, false, value);
@@ -51,12 +58,15 @@ const RichTextEditor = ({ value, onChange, placeholder = "𞤖𞤢𞤤𞤢𞤲�
   };
 
   const handleContentChange = () => {
-    if (editorRef.current && !isUpdating) {
-      setIsUpdating(true);
-      onChange(editorRef.current.innerHTML);
-      setTimeout(() => setIsUpdating(false), 0);
-    }
+    if (!editorRef.current) return;
+    const html = editorRef.current.innerHTML;
+    if (html === lastEmittedRef.current) return;
+    lastEmittedRef.current = html;
+    onChange(html);
   };
+
+  // Les boutons de la barre ne doivent ni soumettre le formulaire ni voler la sélection
+  const keepSelection = (e) => e.preventDefault();
 
   const handleKeyPress = (e) => {
     const char = e.key;
@@ -99,7 +109,7 @@ const RichTextEditor = ({ value, onChange, placeholder = "𞤖𞤢𞤤𞤢𞤲�
           <select
             value={selectedFont}
             onChange={(e) => handleFontChange(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
           >
             {fonts.map((font) => (
               <option key={font.name} value={font.value}>
@@ -112,7 +122,7 @@ const RichTextEditor = ({ value, onChange, placeholder = "𞤖𞤢𞤤𞤢𞤲�
           <select
             value={fontSize}
             onChange={(e) => handleFontSizeChange(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
           >
             {fontSizes.map((size) => (
               <option key={size} value={size}>
@@ -125,6 +135,8 @@ const RichTextEditor = ({ value, onChange, placeholder = "𞤖𞤢𞤤𞤢𞤲�
 
           {/* Format Buttons */}
           <button
+            type="button"
+            onMouseDown={keepSelection}
             onClick={() => executeCommand('bold')}
             className="px-3 py-1.5 text-sm font-bold border border-gray-300 rounded hover:bg-gray-100 transition-colors"
             title="𞤄𞤮𞤤𞤣"
@@ -133,6 +145,8 @@ const RichTextEditor = ({ value, onChange, placeholder = "𞤖𞤢𞤤𞤢𞤲�
           </button>
           
           <button
+            type="button"
+            onMouseDown={keepSelection}
             onClick={() => executeCommand('italic')}
             className="px-3 py-1.5 text-sm italic border border-gray-300 rounded hover:bg-gray-100 transition-colors"
             title="𞤋𞤼𞤢𞤤𞤭𞤳"
@@ -141,6 +155,8 @@ const RichTextEditor = ({ value, onChange, placeholder = "𞤖𞤢𞤤𞤢𞤲�
           </button>
           
           <button
+            type="button"
+            onMouseDown={keepSelection}
             onClick={() => executeCommand('underline')}
             className="px-3 py-1.5 text-sm underline border border-gray-300 rounded hover:bg-gray-100 transition-colors"
             title="𞤒𞤲𞤣𞤫𞤪𞤤𞤢𞤴𞤲"
@@ -151,6 +167,8 @@ const RichTextEditor = ({ value, onChange, placeholder = "𞤖𞤢𞤤𞤢𞤲�
           <div className="w-px h-6 bg-gray-300 mx-1"></div>
 
           <button
+            type="button"
+            onMouseDown={keepSelection}
             onClick={() => executeCommand('insertUnorderedList')}
             className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
             title="𞤂𞤭𞤧𞤼 𞤄𞤵𞤤𞤫𞤼"
@@ -159,6 +177,8 @@ const RichTextEditor = ({ value, onChange, placeholder = "𞤖𞤢𞤤𞤢𞤲�
           </button>
           
           <button
+            type="button"
+            onMouseDown={keepSelection}
             onClick={() => executeCommand('insertOrderedList')}
             className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
             title="𞤂𞤭𞤧𞤼 𞤐𞤵𞤥𞤦𞤫𞤪"

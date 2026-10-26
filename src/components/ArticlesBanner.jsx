@@ -87,7 +87,7 @@ const ArticlesBanner = () => {
 
       <div className="relative h-full flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="max-w-3xl text-right" dir="rtl">
+          <div className="max-w-3xl text-left">
             <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-3 py-1 text-xs font-medium rounded-full border border-white/30 mb-3">
               {getCategoryName(currentArticle.category)}
             </span>
@@ -103,7 +103,7 @@ const ArticlesBanner = () => {
             >
               <span>𞤔𞤢𞤲𞤢𞤲</span>
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
             </Link>
           </div>
@@ -124,12 +124,12 @@ const ArticlesBanner = () => {
           >
             <HiChevronRight className="h-5 w-5" />
           </button>
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 space-x-reverse">
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
             {articles.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`w-2 h-2 rounded-full transition-all ${
+                className={`w-2 h-2 min-h-0 min-w-0 rounded-full transition-all ${
                   index === currentSlide ? 'bg-white scale-125' : 'bg-white/50'
                 }`}
               />

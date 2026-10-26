@@ -64,11 +64,11 @@ const TableOfContents = ({ content, mobile = false }) => {
 
   return (
     <div className={`${mobile ? 'p-4' : 'sticky top-4'} bg-white rounded-lg border border-gray-200 p-4`}>
-      <h3 className="font-bold text-black mb-4 flex items-center" dir="rtl">
+      <h3 className="font-bold text-black mb-4 flex items-center">
         <HiOutlineBookOpen className="ml-2 h-5 w-5" />
         𞤚𞤢𞤥𞤵𞤤𞤫 𞤥𞤢𞤲𞤭𞤲𞤢𞥄𞤲
       </h3>
-      <nav className="space-y-1" dir="rtl">
+      <nav className="space-y-1">
         {headings.map((heading) => (
           <button
             key={heading.id}
