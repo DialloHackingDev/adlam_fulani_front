@@ -28,7 +28,8 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         const response = await apiService.auth.getProfile();
-        dispatch({ type: 'LOGIN_SUCCESS', payload: response.data.user });
+        // Réponse API : { status, data: { user } }
+        dispatch({ type: 'LOGIN_SUCCESS', payload: response.data.data.user });
       }
     } catch (error) {
       localStorage.removeItem('token');
@@ -79,6 +80,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const logout = useCallback(() => {
+    apiService.auth.logout().catch(() => {});
     localStorage.removeItem('token');
     dispatch({ type: 'LOGOUT' });
   }, []);

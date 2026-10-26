@@ -33,7 +33,14 @@ const Checkout = () => {
     try {
       // 1. Créer une session de paiement
       const sessionResponse = await apiService.checkout.createSession({});
-      const { paymentIntentId } = sessionResponse.data.data;
+      const { paymentIntentId, simulation } = sessionResponse.data.data;
+
+      // Paiement réel (Stripe) : la saisie de carte n'est pas encore intégrée côté front
+      if (!simulation) {
+        setProcessing(false);
+        alert('Le paiement par carte sera bientôt disponible.');
+        return;
+      }
 
       // 2. Simuler le paiement (3 secondes)
       await new Promise(resolve => setTimeout(resolve, 3000));

@@ -19,13 +19,13 @@ const AdminLogin = () => {
     setError('');
     setIsSubmitting(true);
 
-    const result = await login(formData.email, formData.password);
-    
-    if (!result.success) {
-      setError(result.error);
+    try {
+      await login(formData.email, formData.password);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur de connexion');
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   const handleChange = (e) => {

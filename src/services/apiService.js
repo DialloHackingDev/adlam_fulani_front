@@ -23,6 +23,9 @@ export const getImageUrl = (imagePath) => {
   return `${BASE_URL}${cleanPath}`;
 };
 
+// Les uploads de PDF peuvent prendre bien plus que les 10 s par défaut
+const UPLOAD_TIMEOUT = 120000;
+
 // Instance axios avec configuration
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -32,6 +35,17 @@ const apiClient = axios.create({
   },
 });
 
+// Identifiant de visiteur anonyme (likes) : le cookie de session n'est pas
+// transmis entre le front et l'API, qui sont sur des domaines différents
+const getSessionId = () => {
+  let sessionId = localStorage.getItem('sessionId');
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    localStorage.setItem('sessionId', sessionId);
+  }
+  return sessionId;
+};
+
 // Intercepteur pour ajouter le token d'authentification
 apiClient.interceptors.request.use(
   (config) => {
@@ -39,6 +53,7 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    config.headers['X-Session-Id'] = getSessionId();
     return config;
   },
   (error) => Promise.reject(error)
@@ -48,10 +63,14 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Un 401 sur login/register = identifiants refusés : laisser la page afficher l'erreur
+    const isAuthAttempt = /\/auth\/(login|register)$/.test(error.config?.url || '');
+    if (error.response?.status === 401 && !isAuthAttempt) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -77,17 +96,19 @@ export const apiService = {
     getBySlug: (slug) => apiClient.get(`/articles/slug/${slug}`),
     getById: (id) => apiClient.get(`/articles/${id}`),
     getByCategory: (category, params = {}) => apiClient.get(`/articles/category/${category}`, { params }),
-    search: (query, params = {}) => apiClient.get(`/articles/search?q=${query}`, { params }),
+    search: (query, params = {}) => apiClient.get('/articles', { params: { ...params, search: query } }),
     
     // User actions
-    toggleLike: (id) => apiClient.patch(`/articles/${id}/like`),
+    toggleLike: (id) => apiClient.patch(`/article-likes/${id}/like`),
     
     // Admin
     create: (formData) => apiClient.post('/admin/articles', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: UPLOAD_TIMEOUT
     }),
     update: (id, formData) => apiClient.put(`/admin/articles/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: UPLOAD_TIMEOUT
     }),
     delete: (id) => apiClient.delete(`/admin/articles/${id}`),
     toggleFeatured: (id) => apiClient.patch(`/articles/${id}/featured`),
@@ -112,10 +133,12 @@ export const apiService = {
     
     // Admin
     create: (formData) => apiClient.post('/admin/ebooks', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: UPLOAD_TIMEOUT
     }),
     update: (id, formData) => apiClient.put(`/admin/ebooks/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: UPLOAD_TIMEOUT
     }),
     delete: (id) => apiClient.delete(`/admin/ebooks/${id}`),
     toggleFeatured: (id) => apiClient.patch(`/ebooks/${id}/featured`),
@@ -135,10 +158,12 @@ export const apiService = {
     
     // Admin
     create: (formData) => apiClient.post('/documents', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: UPLOAD_TIMEOUT
     }),
     update: (id, formData) => apiClient.put(`/documents/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: UPLOAD_TIMEOUT
     }),
     delete: (id) => apiClient.delete(`/documents/${id}`),
     toggleFeatured: (id) => apiClient.patch(`/documents/${id}/featured`),
@@ -196,8 +221,8 @@ export const apiService = {
 
   // ==================== LIKES ====================
   likes: {
-    toggleArticle: (articleId) => apiClient.patch(`/articles/${articleId}/like`),
-    getArticleLikes: (articleId) => apiClient.get(`/article-likes/${articleId}`),
+    toggleArticle: (articleId) => apiClient.patch(`/article-likes/${articleId}/like`),
+    getArticleLikes: (articleId) => apiClient.get(`/article-likes/${articleId}/like-status`),
   },
 
   // ==================== SHOP ====================

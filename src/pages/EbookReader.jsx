@@ -32,14 +32,8 @@ const EbookReader = () => {
       const ebookData = ebookResponse.data.data?.ebook || ebookResponse.data.ebook || ebookResponse.data;
       setEbook(ebookData);
       
-      // Si le PDF est sur Cloudinary, utiliser directement l'URL
-      if (ebookData.pdfFile && ebookData.pdfFile.includes('cloudinary.com')) {
-        setPdfUrl(ebookData.pdfFile);
-      } else {
-        // Sinon utiliser le proxy backend
-        const proxyUrl = apiService.ebooks.stream(id);
-        setPdfUrl(proxyUrl);
-      }
+      // Le PDF est toujours servi par le backend, qui vérifie l'achat
+      setPdfUrl(apiService.ebooks.stream(id));
       
     } catch (error) {
       if (error.response?.status === 403) {
